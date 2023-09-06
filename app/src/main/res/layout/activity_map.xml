@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/main"
+    tools:context=".Map">
+
+    <View
+        android:id="@+id/rectangle_1"
+        android:layout_width="match_parent"
+        android:layout_height="129dp"
+        android:layout_marginTop="-50dp"
+        android:background="@color/main"
+        tools:ignore="VisualLintBounds" />
+
+
+    <TextView
+        android:id="@+id/nearbySpots"
+        android:layout_width="192dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="70dp"
+        android:layout_marginTop="15dp"
+        android:fontFamily="@font/habibi"
+        android:text="Nearby spots"
+        android:textAppearance="@style/my_sighting"
+        android:textColor="@color/get_started__color"
+        android:textSize="20dp"
+        android:textStyle="bold"
+        tools:ignore="HardcodedText,SpUsage,TextSizeCheck" />
+
+    <TextView
+        android:id="@+id/locationTextView"
+        android:layout_width="177dp"
+        android:layout_height="33dp"
+        android:layout_marginStart="60dp"
+        android:layout_marginTop="49dp"
+        android:fontFamily="@font/habibi"
+        android:text=" {Current Location...}"
+        android:textColor="@color/get_started__color"
+        android:textSize="16dp"
+        tools:ignore="HardcodedText,SpUsage,TextSizeCheck" />
+
+    <TextView
+        android:id="@+id/distanceTextView"
+        android:layout_width="109dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="268dp"
+        android:layout_marginTop="48dp"
+        android:fontFamily="@font/hamhlet"
+        android:text="Distance: 0 km"
+        android:textColor="@color/black"
+        android:textStyle="bold"
+        tools:ignore="HardcodedText,TextSizeCheck" />
+
+    <SeekBar
+        android:id="@+id/distanceSeekBar"
+        android:layout_width="164dp"
+        android:layout_height="41dp"
+        android:layout_below="@id/distanceTextView"
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="240dp"
+        android:background="@drawable/home_bg" />
+
+    <ImageButton
+        android:id="@+id/back"
+        android:layout_width="52dp"
+        android:layout_height="77dp"
+        android:layout_marginStart="1dp"
+        android:background="#00FFFFFF"
+        android:src="@drawable/back_black"
+        tools:ignore="ContentDescription,SpeakableTextPresentCheck" />
+
+    <com.google.android.gms.maps.MapView
+        android:id="@+id/mapView"
+        android:layout_width="match_parent"
+        android:layout_height="499dp"
+        android:layout_marginTop="130dp"
+        tools:ignore="SpeakableTextPresentCheck" />
+
+
+    <!-- LISTVIEW OF NEARBY SPOTS STILL TO BE IMPLEMENTED-->
+
+</RelativeLayout>

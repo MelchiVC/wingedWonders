@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/main"
+    tools:context=".Home">
+
+    <View
+        android:id="@+id/rectangle_1"
+        android:layout_width="match_parent"
+        android:layout_height="457dp"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="-50dp"
+        android:background="@drawable/home_bg"
+        tools:ignore="VisualLintBounds" />
+
+    <TextView
+        android:id="@+id/hello_user"
+        android:layout_width="209dp"
+        android:layout_height="26dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="18dp"
+        android:layout_marginTop="25dp"
+        android:fontFamily="@font/hamhlet"
+        android:gravity="center_horizontal|top"
+        android:text="@string/hello_user"
+        android:textAppearance="@style/hello_user"
+        tools:ignore="RtlHardcoded,TextSizeCheck" />
+
+    <TextView
+        android:id="@+id/view_all"
+        android:layout_width="44dp"
+        android:layout_height="15dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="348dp"
+        android:layout_marginTop="518dp"
+        android:fontFamily="@font/habibi"
+        android:gravity="center_horizontal|top"
+        android:text="@string/view_all"
+        android:textAppearance="@style/view_all"
+        android:textStyle="bold"
+        tools:ignore="RtlHardcoded,TextSizeCheck" />
+
+
+    <RelativeLayout
+        android:id="@+id/birds"
+        android:layout_width="316dp"
+        android:layout_height="398dp"
+        android:layout_alignParentLeft="true"
+        android:layout_marginLeft="44dp"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="68dp"
+        android:clipToOutline="true"
+        tools:ignore="RtlHardcoded,UnusedAttribute">
+
+        <!--ViewFlipper will display recent bird images in an auto slide-in/slide-out style-->
+
+        <ViewFlipper
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginLeft="1dp"
+            android:layout_marginTop="0dp"
+            android:autoStart="true"
+            android:clipToOutline="true"
+            android:flipInterval="2000"
+            android:inAnimation="@android:anim/slide_in_left"
+            android:outAnimation="@android:anim/slide_out_right"
+            tools:ignore="UselessParent">
+
+        <ImageView
+            android:id="@+id/bird_home"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginLeft="0dp"
+            android:layout_marginTop="0dp"
+            android:clipToOutline="true"
+            android:src="@drawable/home_bird"
+            tools:ignore="ContentDescription,ObsoleteLayoutParam" />
+
+            <ImageView
+                android:id="@+id/bird_flamingo"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentTop="true"
+                android:layout_marginLeft="0dp"
+                android:layout_marginTop="0dp"
+                android:clipToOutline="true"
+                android:src="@drawable/flamingo"
+                tools:ignore="ContentDescription,ObsoleteLayoutParam" />
+
+            <ImageView
+                android:id="@+id/bird_macaw"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentTop="true"
+                android:layout_marginLeft="0dp"
+                android:layout_marginTop="0dp"
+                android:clipToOutline="true"
+                android:src="@drawable/macaw"
+                tools:ignore="ContentDescription,ObsoleteLayoutParam" />
+
+            <ImageView
+                android:id="@+id/bird_robin"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentTop="true"
+                android:layout_marginLeft="0dp"
+                android:layout_marginTop="0dp"
+                android:clipToOutline="true"
+                android:src="@drawable/robin"
+                tools:ignore="ContentDescription,ObsoleteLayoutParam" />
+
+        </ViewFlipper>
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/recent_obse"
+        android:layout_width="169dp"
+        android:layout_height="23dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="26dp"
+        android:layout_marginTop="483dp"
+        android:fontFamily="@font/hamhlet"
+        android:gravity="center_horizontal|top"
+        android:text="@string/recent_obse"
+        android:textAppearance="@style/recent_obse"
+        android:textStyle="bold"
+        tools:ignore="RtlHardcoded,TextSizeCheck" />
+
+    <!--will display recent bird images in an auto slide-in/slide-out style-->
+    <ViewFlipper
+        android:layout_width="150dp"
+        android:layout_height="220dp"
+        android:layout_alignParentEnd="true"
+        android:layout_marginLeft="128dp"
+        android:layout_marginTop="518dp"
+        android:layout_marginEnd="133dp"
+        android:autoStart="true"
+        android:flipInterval="2000"
+        android:inAnimation="@android:anim/slide_in_left"
+        android:outAnimation="@android:anim/slide_out_right"
+        tools:ignore="RtlHardcoded">
+
+        <ImageView
+            android:id="@+id/kingfisher"
+            android:layout_width="150dp"
+            android:layout_height="250dp"
+            android:layout_marginTop="-8dp"
+            android:src="@drawable/kingfisher"
+            tools:ignore="ContentDescription,VisualLintBounds" />
+
+        <ImageView
+            android:id="@+id/bearded"
+            android:layout_width="150dp"
+            android:layout_height="250dp"
+            android:layout_marginTop="-8dp"
+            android:src="@drawable/bearded"
+            tools:ignore="ContentDescription" />
+
+    </ViewFlipper>
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigationView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        app:menu="@menu/bottom_nav_menu"
+        android:padding="10dp"
+        android:background="@drawable/nav_border"
+        tools:ignore="VisualLintBottomNav" />
+
+
+
+
+</RelativeLayout>
