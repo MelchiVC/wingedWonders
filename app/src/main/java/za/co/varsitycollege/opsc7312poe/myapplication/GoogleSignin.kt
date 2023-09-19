@@ -15,9 +15,16 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInResult
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.Status
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 
 class GoogleSignin(private val activity: Activity, private val context: Context) {
     private val mAuth = FirebaseAuth.getInstance()
+    private val database: DatabaseReference = FirebaseDatabase.getInstance().reference.child("users")
 
     fun performGoogleSignIn() {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -51,11 +58,45 @@ class GoogleSignin(private val activity: Activity, private val context: Context)
         mAuth.signInWithCredential(credential)
             .addOnCompleteListener(activity) { task ->
                 if (task.isSuccessful) {
-                    showToast("Google Sign-In successful")
+                    val user = mAuth.currentUser
+                    if (user != null) {
+                        // Save user information to Firebase Realtime Database
+                        saveUserToDatabase(user)
+                        showToast("Google Sign-In successful")
+                    } else {
+                        showToast("User not authenticated")
+                    }
                 } else {
                     showToast("Google Sign-In failed")
                 }
             }
+    }
+
+    private fun saveUserToDatabase(user: FirebaseUser) {
+        val userId = user.uid
+        val userName = user.displayName
+        val userEmail = user.email
+
+        val userMap = HashMap<String, Any>()
+        userName?.let { userMap["name"] = it }
+        userEmail?.let { userMap["email"] = it }
+
+        database.child(userId).setValue(userMap)
+    }
+    fun checkUserExistsInDatabase(uid: String, onUserExists: () -> Unit, onUserDoesNotExist: () -> Unit) {
+        database.child(uid).addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    onUserExists()
+                } else {
+                    onUserDoesNotExist()
+                }
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                showToast("Google Sign-In failed")
+            }
+        })
     }
 
     private fun showToast(message: String) {
@@ -65,4 +106,5 @@ class GoogleSignin(private val activity: Activity, private val context: Context)
     companion object {
         const val RC_SIGN_IN = 9001
     }
+
 }

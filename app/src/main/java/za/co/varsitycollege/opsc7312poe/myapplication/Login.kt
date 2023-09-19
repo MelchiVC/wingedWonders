@@ -16,12 +16,14 @@ class Login : AppCompatActivity() {
     private lateinit var googleS: ImageButton
     private lateinit var auth: FirebaseAuth
     private lateinit var reg: TextView
+    private lateinit var googleSignInHelper: GoogleSignin
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
+        googleSignInHelper = GoogleSignin(this, applicationContext)
+
         auth = FirebaseAuth.getInstance()
-        //Google()
         val regTextView = findViewById<TextView>(R.id.altRegisterTxt)
         regTextView.setOnClickListener {
             val registrationIntent = Intent(this, Register::class.java)
@@ -32,22 +34,17 @@ class Login : AppCompatActivity() {
         loginButton.setOnClickListener {
             performSignin()
         }
-    }
 
-    /*private fun Google() {
-        val googleSignInHelper = GoogleSignin(this)
-        googleSignInHelper.checkAndHandleSignIn()
+
+
         googleS = findViewById(R.id.googleButton)
+        googleS.setOnClickListener {
+            googleSignInHelper.performGoogleSignIn()
+            checkAuthenticationState()
+        }
 
-        googleS.setOnClickListener(object : View.OnClickListener {
-            override fun onClick(v: View) {
-                // Call the method in GoogleSignin to handle the Google Sign-In
-                googleSignInHelper.performGoogleSignIn()
-            }
-        })
 
-        googleSignInHelper.checkAndHandleSignIn()
-    }*/
+    }
 
     private fun performSignin() {
         val email = findViewById<EditText>(R.id.emailLogin)
@@ -65,6 +62,36 @@ class Login : AppCompatActivity() {
                     Toast.makeText(this, "Unsuccessful", Toast.LENGTH_SHORT).show()
                 }
             }
+    }
+    private fun checkAuthenticationState() {
+        val user = FirebaseAuth.getInstance().currentUser
+        if (user != null) {
+            // User is signed in, open the homepage
+            val intent = Intent(this, Home::class.java)
+            startActivity(intent)
+            finish() // Optional: finish the current login activity
+        } else {
+            Toast.makeText(this, "Invalid account register below", Toast.LENGTH_SHORT).show()
+        }
+    }
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == GoogleSignin.RC_SIGN_IN) {
+            googleSignInHelper.handleSignInResult(data)
+        }
+    }
+    private fun checkGoogleUserExistsInDatabase(uid: String) {
+        googleSignInHelper.checkUserExistsInDatabase(uid,
+            onUserExists = {
+                // User exists in the database, grant access or perform other actions.
+                Toast.makeText(this, "Successful", Toast.LENGTH_SHORT).show()
+            },
+            onUserDoesNotExist = {
+                // User does not exist in the database, show an error message.
+                Toast.makeText(this, "User does not exist in the database", Toast.LENGTH_SHORT).show()
+            }
+        )
     }
 }
 

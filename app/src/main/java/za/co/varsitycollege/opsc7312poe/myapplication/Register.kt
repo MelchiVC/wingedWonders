@@ -1,5 +1,6 @@
 package za.co.varsitycollege.opsc7312poe.myapplication
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
@@ -36,7 +37,7 @@ class Register : AppCompatActivity() {
         mAuth = FirebaseAuth.getInstance()
         mDatabase = FirebaseDatabase.getInstance().reference
 
-        googleSignInHelper = GoogleSignin(this,applicationContext)
+        googleSignInHelper = GoogleSignin(this, applicationContext)
 
         googleS.setOnClickListener(object : View.OnClickListener {
             override fun onClick(v: View) {
@@ -67,5 +68,12 @@ class Register : AppCompatActivity() {
                     }
             }
         })
+    }
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == GoogleSignin.RC_SIGN_IN) {
+            googleSignInHelper.handleSignInResult(data)
+        }
     }
 }
