@@ -10,6 +10,11 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
+import androidx.lifecycle.ViewModelProvider
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 
 
 class Login : AppCompatActivity() {
@@ -17,12 +22,13 @@ class Login : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
     private lateinit var reg: TextView
     private lateinit var googleSignInHelper: GoogleSignin
+    private lateinit var userDataViewModel: UserDataViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
+        userDataViewModel = ViewModelProvider(this).get(UserDataViewModel::class.java)
         googleSignInHelper = GoogleSignin(this, applicationContext)
-
         auth = FirebaseAuth.getInstance()
         val regTextView = findViewById<TextView>(R.id.altRegisterTxt)
         regTextView.setOnClickListener {
@@ -35,15 +41,11 @@ class Login : AppCompatActivity() {
             performSignin()
         }
 
-
-
         googleS = findViewById(R.id.googleButton)
         googleS.setOnClickListener {
             googleSignInHelper.performGoogleSignIn()
             checkAuthenticationState()
         }
-
-
     }
 
     private fun performSignin() {
@@ -57,41 +59,61 @@ class Login : AppCompatActivity() {
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
                     val user = auth.currentUser
-                    Toast.makeText(this, "Successful", Toast.LENGTH_SHORT).show()
+                    if (user != null) {
+                        // Create a UserData.User instance with the user's information
+                        val loggedInUser = UserData(
+                            uid = user.uid,
+                            full_name = user.displayName, // You can change this to the user's name if available
+                            email = user.email
+                        )
+                        fetchUserData(loggedInUser)
+                    }
                 } else {
                     Toast.makeText(this, "Unsuccessful", Toast.LENGTH_SHORT).show()
                 }
             }
     }
+
     private fun checkAuthenticationState() {
         val user = FirebaseAuth.getInstance().currentUser
-        if (user != null) {
-            // User is signed in, open the homepage
-            val intent = Intent(this, Home::class.java)
-            startActivity(intent)
-            finish() // Optional: finish the current login activity
-        } else {
-            Toast.makeText(this, "Invalid account register below", Toast.LENGTH_SHORT).show()
+        if (user == null) {
+            Toast.makeText(this, "Invalid account, register below", Toast.LENGTH_SHORT).show()
         }
     }
+
+    private fun fetchUserData(loggedInUser: UserData) {
+        val databaseReference = FirebaseDatabase.getInstance().reference.child("users")
+            .child(loggedInUser.uid)
+
+        databaseReference.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (snapshot.exists()) {
+                    val userData = snapshot.getValue(UserData::class.java)
+                    if (userData != null) {
+                        // Update the UserDataViewModel with fetched user data
+                        userDataViewModel.setUserData(userData.uid,userData.full_name,userData.email)
+                        // Proceed to the Home activity after setting user data
+                        val intent = Intent(this@Login, Home::class.java)
+                        startActivity(intent)
+                        finish()
+                    } else {
+                        Toast.makeText(this@Login, "Unsuccessful", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Toast.makeText(this@Login, "Database error", Toast.LENGTH_SHORT).show()
+            }
+        })
+    }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
         if (requestCode == GoogleSignin.RC_SIGN_IN) {
             googleSignInHelper.handleSignInResult(data)
         }
-    }
-    private fun checkGoogleUserExistsInDatabase(uid: String) {
-        googleSignInHelper.checkUserExistsInDatabase(uid,
-            onUserExists = {
-                // User exists in the database, grant access or perform other actions.
-                Toast.makeText(this, "Successful", Toast.LENGTH_SHORT).show()
-            },
-            onUserDoesNotExist = {
-                // User does not exist in the database, show an error message.
-                Toast.makeText(this, "User does not exist in the database", Toast.LENGTH_SHORT).show()
-            }
-        )
     }
 }
 

@@ -62,6 +62,7 @@ class GoogleSignin(private val activity: Activity, private val context: Context)
                     if (user != null) {
                         // Save user information to Firebase Realtime Database
                         saveUserToDatabase(user)
+
                         showToast("Google Sign-In successful")
                     } else {
                         showToast("User not authenticated")

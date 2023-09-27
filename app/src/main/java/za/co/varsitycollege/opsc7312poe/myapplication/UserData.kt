@@ -1,9 +1,7 @@
 package za.co.varsitycollege.opsc7312poe.myapplication
 
-class UserData {
-    data class User(
-        val uid: String,
-        val name: String?,
-        val email: String?
-    )
-}
+data class UserData(
+    val uid: String = "",
+    val full_name: String? = null,
+    val email: String? = null
+)
