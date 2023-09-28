@@ -3,6 +3,7 @@ package za.co.varsitycollege.opsc7312poe.myapplication
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import android.widget.Toast
 import androidx.fragment.app.FragmentActivity
 import com.google.android.gms.auth.api.Auth
@@ -60,10 +61,9 @@ class GoogleSignin(private val activity: Activity, private val context: Context)
                 if (task.isSuccessful) {
                     val user = mAuth.currentUser
                     if (user != null) {
-                        // Save user information to Firebase Realtime Database
-                        saveUserToDatabase(user)
-
-                        showToast("Google Sign-In successful")
+                        // Fetch user data from the database
+                        Log.d("GoogleSignIn", "UID: ${user.uid}")
+                        fetchUserData(user.uid)
                     } else {
                         showToast("User not authenticated")
                     }
@@ -71,6 +71,42 @@ class GoogleSignin(private val activity: Activity, private val context: Context)
                     showToast("Google Sign-In failed")
                 }
             }
+    }
+
+    private fun fetchUserData(uid: String) {
+        val databaseReference = FirebaseDatabase.getInstance().reference.child("users")
+            .child(uid)
+
+        databaseReference.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (snapshot.exists()) {
+                    val email = snapshot.child("email").getValue(String::class.java)
+                    val full_name = snapshot.child("name").getValue(String::class.java)
+
+                    if (email != null && full_name != null) {
+                        val loggedInUser = UserData(
+                            uid = uid,
+                            full_name = full_name,
+                            email = email
+                        )
+
+                        // Update the UserDataManager with the fetched data
+                        UserDataManager.getInstance().setLoggedInUser(loggedInUser)
+
+                        // Proceed to the Home activity
+                        val intent = Intent(activity, Home::class.java)
+                        activity.startActivity(intent)
+                        activity.finish()
+                    } else {
+                        showToast("Unsuccesful data collection")
+                    }
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                showToast("Unsuccesful data collection 2")
+            }
+        })
     }
 
     private fun saveUserToDatabase(user: FirebaseUser) {
