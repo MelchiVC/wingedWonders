@@ -6,14 +6,15 @@ import android.graphics.Bitmap
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.preference.PreferenceManager.OnActivityResultListener
 import android.provider.MediaStore
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.firebase.storage.FirebaseStorage
 
 import za.co.varsitycollege.opsc7312poe.myapplication.databinding.ActivitySightingsBinding
+import java.io.ByteArrayOutputStream
 
 class Sightings : AppCompatActivity() {
     private lateinit var binding:ActivitySightingsBinding
@@ -45,7 +46,7 @@ val dialog:AlertDialog=builder.create()
 
 
         binding.saveButton.setOnClickListener{
-
+uploadImage()
         }
 
 
@@ -80,22 +81,40 @@ private fun selectImage() {
             binding.birdImageView.setImageURI(imageUri)
         }
         else if (resultCode == RESULT_OK && requestCode == request_carmera && data != null){
-         var imagemap=data.extras?.get("data") as Bitmap
-            binding.birdImageView.setImageBitmap(imagemap)
+            val imageBitmap = data.extras?.get("data") as Bitmap
+
+            // Convert Bitmap to Uri
+            imageUri = getImageUriFromBitmap(imageBitmap)
+
+            binding.birdImageView.setImageBitmap(imageBitmap)
         }
     }
 
+    private fun getImageUriFromBitmap(bitmap: Bitmap): Uri {
+        val byteArrayOutputStream = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream)
+        val path = MediaStore.Images.Media.insertImage(contentResolver, bitmap, "Title", null)
+        return Uri.parse(path)
+    }
 
     //function to upload image to firebase
-  /*  private fun uploadImage(){
+    private fun uploadImage(){
         val storage= FirebaseStorage.getInstance().getReference("images/")
-        val birdRef=
-        storage.putFile(imageUri!!).addOnSuccessListener {
-            storage.downloadUrl.addOnSuccessListener { Uri->
-                val map= HashMap<String, Any>()
-                map["pic"]= Uri.toString()
-                taskRef.child("imageUri").setValue(map)
-    }
-}
-        }*/
-}
+        val birdRef = storage.child("images")
+
+        if (imageUri != null) {
+            birdRef.putFile(imageUri!!)
+                .addOnSuccessListener { taskSnapshot ->
+                    // Image uploaded successfully
+                    // You can handle the success here, for example, show a Toast message
+                    Toast.makeText(this, "Image uploaded successfully", Toast.LENGTH_SHORT).show()
+                }
+                .addOnFailureListener { exception ->
+                    // Handle unsuccessful uploads
+                    // You can also show an error message to the user
+                    Toast.makeText(this, "Image upload failed: ${exception.message}", Toast.LENGTH_SHORT).show()
+                }
+        } else {
+            // Handle the case where imageUri is null (user didn't select an image)
+            Toast.makeText(this, "No image selected", Toast.LENGTH_SHORT).show()
+        }}}
