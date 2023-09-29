@@ -108,18 +108,6 @@
         android:textColor="@color/white"
         tools:ignore="HardcodedText" />
 
-    <Button
-        android:id="@+id/CarmeraButton"
-        android:layout_width="142dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="224dp"
-        android:layout_marginTop="328dp"
-        android:background="@drawable/detail_container"
-        android:fontFamily="@font/habibi"
-        android:text="camera"
-        android:textColor="@color/white"
-        tools:ignore="HardcodedText" />
-
     <TextView
         android:id="@+id/locationTextView"
         android:layout_width="177dp"
