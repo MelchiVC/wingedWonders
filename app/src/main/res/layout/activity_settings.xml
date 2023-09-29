@@ -123,7 +123,6 @@
         tools:ignore="RtlHardcoded,TextSizeCheck" />
 
     <TextView
-        android:id="@+id/full_name"
         android:layout_width="90.5dp"
         android:layout_height="28.5dp"
         android:layout_marginLeft="26dp"
@@ -135,7 +134,7 @@
         tools:ignore="RtlHardcoded,TextSizeCheck" />
 
     <TextView
-        android:id="@+id/sarah_thompson"
+        android:id="@+id/full_name"
         android:layout_width="141.5dp"
         android:layout_height="28.5dp"
         android:layout_marginLeft="259dp"
@@ -147,7 +146,6 @@
         tools:ignore="RtlHardcoded,TextSizeCheck" />
 
     <TextView
-        android:id="@+id/e_mail"
         android:layout_width="65.5dp"
         android:layout_height="28.5dp"
         android:layout_marginLeft="26dp"
@@ -159,7 +157,7 @@
         tools:ignore="RtlHardcoded,TextSizeCheck" />
 
     <TextView
-        android:id="@+id/sarahthompson_gmail_com"
+        android:id="@+id/email"
         android:layout_width="217.5dp"
         android:layout_height="28.5dp"
         android:layout_marginLeft="199dp"
@@ -183,18 +181,15 @@
         tools:ignore="RtlHardcoded,TextSizeCheck" />
 
 
-    <AutoCompleteTextView
-        android:id="@+id/unitAutoCompleteTextView"
-        android:layout_width="162dp"
-        android:layout_height="38.5dp"
+    <Spinner
+        android:id="@+id/unitSpinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_marginLeft="236dp"
         android:layout_marginTop="460dp"
-        android:editable="false"
-        android:hint="Select Unit"
-        android:inputType="none"
-        android:textColor="@color/get_started__color"
-        android:textColorHint="@color/get_started__color"
-        tools:ignore="Deprecated,HardcodedText,RtlHardcoded,TouchTargetSizeCheck" />
+        android:minHeight="48dp"
+        android:enabled="false"
+        android:textColor="@color/get_started__color" />
 
     <TextView
         android:id="@+id/notifications_ek1"

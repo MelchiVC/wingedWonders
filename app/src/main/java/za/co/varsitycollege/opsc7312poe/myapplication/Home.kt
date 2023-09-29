@@ -21,7 +21,7 @@ class Home : AppCompatActivity() {
         greetingTextView.text = "Hello ${fullName ?: "Guest"}"
 
         greetingTextView.setOnClickListener{
-            val registrationIntent = Intent(this, Map::class.java)
+            val registrationIntent = Intent(this, Settings::class.java)
             startActivity(registrationIntent)
         }
     }
