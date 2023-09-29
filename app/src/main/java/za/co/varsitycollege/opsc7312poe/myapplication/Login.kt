@@ -20,14 +20,11 @@ import com.google.firebase.database.ValueEventListener
 class Login : AppCompatActivity() {
     private lateinit var googleS: ImageButton
     private lateinit var auth: FirebaseAuth
-    private lateinit var reg: TextView
     private lateinit var googleSignInHelper: GoogleSignin
-    private lateinit var userDataViewModel: UserDataViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
-        userDataViewModel = ViewModelProvider(this).get(UserDataViewModel::class.java)
         googleSignInHelper = GoogleSignin(this, applicationContext)
         auth = FirebaseAuth.getInstance()
         val regTextView = findViewById<TextView>(R.id.altRegisterTxt)
@@ -44,7 +41,6 @@ class Login : AppCompatActivity() {
         googleS = findViewById(R.id.googleButton)
         googleS.setOnClickListener {
             googleSignInHelper.performGoogleSignIn()
-            checkAuthenticationState()
         }
     }
 
@@ -60,16 +56,10 @@ class Login : AppCompatActivity() {
                 if (task.isSuccessful) {
                     val user = auth.currentUser
                     if (user != null) {
-                        // Create a UserData.User instance with the user's information
-                        val loggedInUser = UserData(
-                            uid = user.uid,
-                            full_name = user.displayName, // You can change this to the user's name if available
-                            email = user.email
-                        )
-                        fetchUserData(loggedInUser)
+                        fetchUserData(user.uid)
                     }
                 } else {
-                    Toast.makeText(this, "Unsuccessful", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Unsuccessful Login try again Or Sign in below", Toast.LENGTH_SHORT).show()
                 }
             }
     }
@@ -81,18 +71,27 @@ class Login : AppCompatActivity() {
         }
     }
 
-    private fun fetchUserData(loggedInUser: UserData) {
+    private fun fetchUserData(uid: String) {
         val databaseReference = FirebaseDatabase.getInstance().reference.child("users")
-            .child(loggedInUser.uid)
+            .child(uid)
 
         databaseReference.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (snapshot.exists()) {
-                    val userData = snapshot.getValue(UserData::class.java)
-                    if (userData != null) {
-                        // Update the UserDataViewModel with fetched user data
-                        userDataViewModel.setUserData(userData.uid,userData.full_name,userData.email)
-                        // Proceed to the Home activity after setting user data
+                    val email = snapshot.child("email").getValue(String::class.java)
+                    val full_name = snapshot.child("full_name").getValue(String::class.java)
+
+                    if (email != null && full_name != null) {
+                        val loggedInUser = UserData(
+                            uid = uid,
+                            full_name = full_name,
+                            email = email
+                        )
+
+                        // Update the UserDataManager with the fetched data
+                        UserDataManager.getInstance().setLoggedInUser(loggedInUser)
+
+                        // Proceed to the Home activity
                         val intent = Intent(this@Login, Home::class.java)
                         startActivity(intent)
                         finish()
@@ -108,6 +107,7 @@ class Login : AppCompatActivity() {
         })
     }
 
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
@@ -115,6 +115,7 @@ class Login : AppCompatActivity() {
             googleSignInHelper.handleSignInResult(data)
         }
     }
+
 }
 
 

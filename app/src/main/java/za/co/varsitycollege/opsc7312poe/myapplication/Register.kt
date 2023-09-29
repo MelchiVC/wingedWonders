@@ -68,6 +68,12 @@ class Register : AppCompatActivity() {
                     }
             }
         })
+
+        val regTextView = findViewById<TextView>(R.id.altRegisterTxt)
+        regTextView.setOnClickListener {
+            val registrationIntent = Intent(this, Login::class.java)
+            startActivity(registrationIntent)
+        }
     }
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -76,4 +82,5 @@ class Register : AppCompatActivity() {
             googleSignInHelper.handleSignInResult(data)
         }
     }
+
 }
