@@ -57,9 +57,12 @@ val dialog:AlertDialog=builder.create()
         dialog.show()
 }
         binding.selectDateButton.setOnClickListener{
+
 val datePickerDialog=DatePickerDialog(this,DatePickerDialog.OnDateSetListener { datePicker, Y, M, D ->
-    binding.txtSelectedDate.setText(""+D+"/"+M+"/"+Y)
+    binding.txtSelectedDate.setText(""+D+"/"+M+"/"+Y
+    )
 },year,month,day)
+            datePickerDialog.datePicker.maxDate= System.currentTimeMillis()
             datePickerDialog.show()
         }
 
