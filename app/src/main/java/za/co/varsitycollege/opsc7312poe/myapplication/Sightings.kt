@@ -9,3 +9,4 @@ class Sightings : AppCompatActivity() {
         setContentView(R.layout.activity_sightings)
     }
 }
+
