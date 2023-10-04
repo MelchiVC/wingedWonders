@@ -1,4 +1,5 @@
 package za.co.varsitycollege.opsc7312poe.myapplication
+import android.app.DatePickerDialog
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -13,14 +14,19 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
 import za.co.varsitycollege.opsc7312poe.myapplication.databinding.ActivitySightingsBinding
 import java.io.ByteArrayOutputStream
+import java.util.*
 
 class Sightings : AppCompatActivity() {
     private lateinit var binding: ActivitySightingsBinding
     private lateinit var mAuth: FirebaseAuth
     private lateinit var mDatabase: DatabaseReference
+    private lateinit var birdData: BirdData
+    private lateinit var storageReference: StorageReference
     private var imageUri: Uri? = null
     private  var request_gallery=100
     private  var request_carmera=200
@@ -29,7 +35,10 @@ class Sightings : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding= ActivitySightingsBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
+        val c= Calendar.getInstance()
+        val year=c.get(Calendar.YEAR)
+        val month=c.get(Calendar.MONTH)
+        val day=c.get(Calendar.DAY_OF_MONTH)
 
 //on click listener to open a dialog to let users to decdie using camera or storage to select image
         binding.addPhotoButton.setOnClickListener{
@@ -47,9 +56,16 @@ val builder = AlertDialog.Builder(this)
 val dialog:AlertDialog=builder.create()
         dialog.show()
 }
+        binding.selectDateButton.setOnClickListener{
+val datePickerDialog=DatePickerDialog(this,DatePickerDialog.OnDateSetListener { datePicker, Y, M, D ->
+    binding.txtSelectedDate.setText(""+D+"/"+M+"/"+Y)
+},year,month,day)
+            datePickerDialog.show()
+        }
 
+//on click listener to save all the detailed that is entered
         binding.saveButton.setOnClickListener{
-uploadImage()
+uploadbird()
         }
 
 
@@ -91,7 +107,7 @@ private fun selectImage() {
             binding.birdImageView.setImageBitmap(imageBitmap)
         }
     }
-
+//function to convert bitmap to url
     private fun getImageUriFromBitmap(bitmap: Bitmap): Uri {
         val byteArrayOutputStream = ByteArrayOutputStream()
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream)
@@ -99,27 +115,51 @@ private fun selectImage() {
         return Uri.parse(path)
     }
 
-    //function to upload image to firebase
-    private fun uploadImage(){
-        mAuth = FirebaseAuth.getInstance()
-        val user = mAuth.currentUser
+    //function to upload bird object to firebase
+    private fun uploadbird() {
+        val user = FirebaseAuth.getInstance().currentUser
+        mDatabase = FirebaseDatabase.getInstance().reference
         if (user != null) {
             val uid = user.uid
+            val birdname = binding.birdNameEditText.text.toString().trim()
+            val selectDate = binding.txtSelectedDate.text.toString().trim()
+            if (birdname.isNotEmpty() && selectDate.isNotEmpty() && imageUri != null) {
+                // Upload image to Firebase Storage
+                 storageReference = FirebaseStorage.getInstance().reference
+                    .child("users/$uid")
+                val imageRef=storageReference.child("bird/${System.currentTimeMillis()}.jpg")
+                imageRef.putFile(imageUri!!).addOnCompleteListener { storageTask ->
+                    if (storageTask.isSuccessful) {
+                        // Get download URL for the uploaded image
+                        imageRef.downloadUrl.addOnSuccessListener { uri ->
+                            val imageUrl = uri.toString()
 
-        if (imageUri != null) {
-            val storageRef = FirebaseStorage.getInstance().reference
-                .child(uid)
-                .child("bird_images")
-                .child("${System.currentTimeMillis()}.jpg")
+                            // Create a BirdData object with the image URL
+                            val birdData = BirdData(uid, birdname, selectDate, imageUrl)
 
-            storageRef.putFile(imageUri!!)
-                .addOnSuccessListener { taskSnapshot ->
-                    Toast.makeText(this, "Image uploaded successfully", Toast.LENGTH_SHORT).show()
+                            // Save bird data to Firebase Realtime Database
+                            mDatabase = FirebaseDatabase.getInstance().reference
+                                .child("users/$uid")
+                            val birdRef=mDatabase.child("bird/$birdname")
+                            birdRef.setValue(birdData)
+                                .addOnSuccessListener {
+                                    Toast.makeText(this, "Bird uploaded successfully", Toast.LENGTH_SHORT).show()
+                                }
+                                .addOnFailureListener { exception ->
+                                    Toast.makeText(this, "Bird upload failed: ${exception.message}", Toast.LENGTH_SHORT).show()
+                                }
+                        }
+                    } else {
+                        // Handle storage upload failure
+                        Toast.makeText(this, "Image upload failed", Toast.LENGTH_SHORT).show()
+                    }
                 }
-                .addOnFailureListener { exception ->
-                    Toast.makeText(this, "Image upload failed: ${exception.message}", Toast.LENGTH_SHORT).show()
-                }}else{
-            Toast.makeText(this, "No image selected", Toast.LENGTH_SHORT).show() }
+            } else {
+                // Invalid input data
+                Toast.makeText(this, "Bird name, date, and image are required", Toast.LENGTH_SHORT).show()
+            }
         } else {
+            // User not authenticated
             Toast.makeText(this, "User not authenticated", Toast.LENGTH_SHORT).show()
-        }}}
+        }
+    }}
