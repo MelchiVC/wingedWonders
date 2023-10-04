@@ -6,7 +6,7 @@ import android.os.Bundle
 import android.view.animation.AnimationUtils
 import android.widget.Button
 class GetStarted : AppCompatActivity() {
-
+//For commit
     private lateinit var getStartedButton: Button
 
 
