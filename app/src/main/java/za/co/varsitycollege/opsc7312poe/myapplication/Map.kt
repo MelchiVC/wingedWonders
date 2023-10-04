@@ -13,7 +13,7 @@ import com.google.android.gms.maps.model.MarkerOptions
 
 class Map: AppCompatActivity(), OnMapReadyCallback {
     private lateinit var mapView: MapView
-
+    //For commit
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map)

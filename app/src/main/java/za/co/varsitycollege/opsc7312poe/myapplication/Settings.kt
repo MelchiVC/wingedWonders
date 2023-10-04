@@ -34,7 +34,7 @@ class Settings : AppCompatActivity() {
             // Enable the Spinner and Switch
             unitSpinner.isEnabled = true
             notificationSwitch.isEnabled = true
-
+//For commit
             // Add any other code you need when "Edit Profile" is clicked
         }
         updateUIWithLoggedInUser()

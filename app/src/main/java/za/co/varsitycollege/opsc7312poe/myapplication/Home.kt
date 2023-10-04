@@ -7,7 +7,7 @@ import android.widget.TextView
 
 class Home : AppCompatActivity() {
     private lateinit var greetingTextView: TextView
-
+    //For commit
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)

@@ -2,7 +2,7 @@ package za.co.varsitycollege.opsc7312poe.myapplication
 
 class UserDataManager private constructor() {
     private var loggedInUser: UserData? = null
-
+    //For commit
     companion object {
         @Volatile
         private var instance: UserDataManager? = null

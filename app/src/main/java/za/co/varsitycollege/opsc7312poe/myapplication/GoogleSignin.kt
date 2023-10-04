@@ -26,13 +26,12 @@ import com.google.firebase.database.ValueEventListener
 class GoogleSignin(private val activity: Activity, private val context: Context) {
     private val mAuth = FirebaseAuth.getInstance()
     private val database: DatabaseReference = FirebaseDatabase.getInstance().reference.child("users")
-
+    //For commit
     fun performGoogleSignIn() {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(context.getString(R.string.default_web_client_id))
             .requestEmail()
             .build()
-
         val googleSignInClient = GoogleSignIn.getClient(activity, gso)
         val signInIntent = googleSignInClient.signInIntent
         activity.startActivityForResult(signInIntent, RC_SIGN_IN)
