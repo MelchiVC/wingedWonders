@@ -64,7 +64,7 @@
         tools:ignore="RtlHardcoded,TextSizeCheck" />
 
     <TextView
-        android:id="@+id/_5"
+        android:id="@+id/A5"
         android:layout_width="19dp"
         android:layout_height="25dp"
         android:layout_gravity="center_horizontal|center"
@@ -94,7 +94,7 @@
         tools:ignore="RtlHardcoded,TextSizeCheck" />
 
     <TextView
-        android:id="@+id/_11"
+        android:id="@+id/A11"
         android:layout_width="24dp"
         android:layout_height="25dp"
         android:layout_gravity="center_horizontal|center"
