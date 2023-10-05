@@ -70,7 +70,12 @@ val datePickerDialog=DatePickerDialog(this,DatePickerDialog.OnDateSetListener { 
         binding.saveButton.setOnClickListener{
 uploadbird()
         }
-
+// on click listener to navigate to bird list page
+  binding.viewSightings.setOnClickListener{
+      val intent = Intent(this@Sightings, ListSightingActivity::class.java)
+      startActivity(intent)
+      finish()
+}
 
     }
 
