@@ -1,6 +1,7 @@
 package za.co.varsitycollege.opsc7312poe.myapplication
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.animation.AnimationUtils
@@ -18,5 +19,11 @@ class GetStarted : AppCompatActivity() {
         getStartedButton = findViewById(R.id.getStarted)
         val bounceAnimation = AnimationUtils.loadAnimation(this, R.anim.bounce_animation)
         getStartedButton.startAnimation(bounceAnimation)
+
+        getStartedButton.setOnClickListener {
+            val intent = Intent(this@GetStarted, Login::class.java)
+            startActivity(intent)
+            finish()
+        }
     }
 }

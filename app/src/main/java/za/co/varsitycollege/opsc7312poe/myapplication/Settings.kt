@@ -1,5 +1,6 @@
 package za.co.varsitycollege.opsc7312poe.myapplication
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
@@ -10,12 +11,15 @@ import android.widget.Spinner
 import android.widget.Switch
 import android.widget.TextView
 import android.widget.Toast
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import kotlin.collections.Map
 
 class Settings : AppCompatActivity() {
+    private lateinit var bottomNavigationView: BottomNavigationView
     private lateinit var NameText: TextView
     private lateinit var emailText: TextView
     private lateinit var EditProfile: TextView
@@ -53,6 +57,34 @@ class Settings : AppCompatActivity() {
                 // Disable notifications
                 disableNotifications()
             }
+        }
+
+        //BOTTOM NAVIGATION
+        bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavigationView)
+        bottomNavigationView.setOnNavigationItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.menu_home -> {
+                    // Start the HomeActivity
+                    startActivity(Intent(applicationContext, Home::class.java))
+                    overridePendingTransition(0, 0)
+                    return@setOnNavigationItemSelectedListener true
+                }
+                R.id.menu_map -> {
+                    // Start the SettingsActivity
+                    startActivity(Intent(applicationContext, Map::class.java))
+                    overridePendingTransition(0, 0)
+                    return@setOnNavigationItemSelectedListener true
+                }
+
+                R.id.menu_sightings -> {
+                    // Start the SightingsActivity
+                    startActivity(Intent(applicationContext, Sightings::class.java))
+                    overridePendingTransition(0, 0)
+                    return@setOnNavigationItemSelectedListener true
+                }
+                R.id.menu_map -> return@setOnNavigationItemSelectedListener true
+            }
+            false
         }
     }
     //Gets logged in users details
