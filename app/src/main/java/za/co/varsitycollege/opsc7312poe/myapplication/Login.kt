@@ -5,12 +5,10 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.ImageButton
 import androidx.appcompat.app.AppCompatActivity
-import android.view.View
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
-import androidx.lifecycle.ViewModelProvider
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -114,7 +112,7 @@ class Login : AppCompatActivity() {
         if (requestCode == GoogleSignin.RC_SIGN_IN) {
             googleSignInHelper.handleSignInResult(data)
         }
-    }
+    } 
 
 }
 

@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import android.widget.AutoCompleteTextView
 import android.widget.Spinner
 import android.widget.Switch
 import android.widget.TextView
@@ -83,17 +82,13 @@ class Settings : AppCompatActivity() {
     }
     // Sample method to check if notifications are enabled
     private fun areNotificationsEnabled(): Boolean {
-        // Implement your logic to check if notifications are enabled
-        // For example, you can check shared preferences or system settings
-        return true // Change this based on your actual logic
+        return true
     }
 
-    // Sample method to enable notifications
+
     private fun enableNotifications() {
-        // Implement code to enable notifications here
     }
 
-    // Sample method to disable notifications
     private fun disableNotifications() {
         // Implement code to disable notifications here
     }
