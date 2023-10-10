@@ -29,7 +29,7 @@ class Login : AppCompatActivity() {
         auth = FirebaseAuth.getInstance()
         val regTextView = findViewById<TextView>(R.id.altRegisterTxt)
         regTextView.setOnClickListener {
-            val registrationIntent = Intent(this, Register::class.java)
+            val registrationIntent = Intent(this, Map::class.java)
             startActivity(registrationIntent)
         }
 

@@ -47,4 +47,7 @@
     <color name="rectangle_25_color">#D9D9D9</color>
     <color name="ellipse_10_color">#73DA96</color>
     <color name="logout_color">#FF0000</color>
+
+    <color name="mapbox_blue">#4264FB</color>
+
 </resources>
