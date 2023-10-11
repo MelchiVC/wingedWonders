@@ -48,8 +48,8 @@ class Map : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        mapView = MapView(this)
-        setContentView(mapView)
+        setContentView(R.layout.activity_map)
+        mapView = findViewById(R.id.mapView)
         locationPermissionHelper = LocationPermissionHelper(WeakReference(this))
         locationPermissionHelper.checkPermissions {
             onMapReady()

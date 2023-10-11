@@ -55,6 +55,14 @@
         android:textStyle="bold"
         tools:ignore="HardcodedText,TextSizeCheck" />
 
+    <ImageButton
+        android:id="@+id/back"
+        android:layout_width="52dp"
+        android:layout_height="77dp"
+        android:layout_marginStart="1dp"
+        android:background="#00FFFFFF"
+        android:src="@drawable/back_black"
+        tools:ignore="ContentDescription,SpeakableTextPresentCheck" />
     <SeekBar
         android:id="@+id/distanceSeekBar"
         android:layout_width="164dp"
@@ -64,23 +72,24 @@
         android:layout_marginStart="240dp"
         android:background="@drawable/home_bg" />
 
-    <ImageButton
-        android:id="@+id/back"
-        android:layout_width="52dp"
-        android:layout_height="77dp"
-        android:layout_marginStart="1dp"
-        android:background="#00FFFFFF"
-        android:src="@drawable/back_black"
-        tools:ignore="ContentDescription,SpeakableTextPresentCheck" />
-
     <com.mapbox.maps.MapView
         android:id="@+id/mapView"
         android:layout_width="match_parent"
         android:layout_height="300dp"
-        android:layout_marginTop="200dp"
+        android:layout_below="@id/distanceSeekBar"
         app:mapbox_cameraTargetLat="40.7128"
         app:mapbox_cameraTargetLng="-74.0060"
         app:mapbox_cameraZoom="9.0" />
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigationView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        app:menu="@menu/bottom_nav_menu"
+        android:padding="10dp"
+        android:background="@drawable/nav_border"
+        tools:ignore="VisualLintBottomNav" />
 
 
     <!-- LISTVIEW OF NEARBY SPOTS STILL TO BE IMPLEMENTED-->
