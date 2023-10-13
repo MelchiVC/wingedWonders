@@ -7,7 +7,7 @@ import android.os.Bundle
 import android.view.animation.AnimationUtils
 import android.widget.Button
 class GetStarted : AppCompatActivity() {
-
+//For commit
     private lateinit var getStartedButton: Button
 
 
@@ -17,12 +17,11 @@ class GetStarted : AppCompatActivity() {
 
         //animation function to make the get started button bounce
         getStartedButton = findViewById(R.id.getStarted)
-        //val bounceAnimation = AnimationUtils.loadAnimation(this, R.anim.bounce_animation)
+        val bounceAnimation = AnimationUtils.loadAnimation(this, R.anim.bounce_animation)
+        getStartedButton.startAnimation(bounceAnimation)
+
         getStartedButton.setOnClickListener {
-            // Start the animation when the button is clicked
-            val bounceAnimation = AnimationUtils.loadAnimation(this, R.anim.bounce_animation)
-            getStartedButton.startAnimation(bounceAnimation)
-            val intent = Intent(this, Login::class.java)
+            val intent = Intent(this@GetStarted, Login::class.java)
             startActivity(intent)
         }
     }

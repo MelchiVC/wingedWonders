@@ -16,7 +16,7 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 
-
+//For commit
 class Login : AppCompatActivity() {
     private lateinit var googleS: ImageButton
     private lateinit var auth: FirebaseAuth
@@ -57,6 +57,9 @@ class Login : AppCompatActivity() {
                     val user = auth.currentUser
                     if (user != null) {
                         fetchUserData(user.uid)
+                        val intent = Intent(this,Home::class.java)
+                        startActivity(intent)
+                        finish()
                     }
                 } else {
                     Toast.makeText(this, "Unsuccessful Login try again Or Sign in below", Toast.LENGTH_SHORT).show()

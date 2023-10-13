@@ -12,7 +12,7 @@ import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
-
+//For commit
 class Register : AppCompatActivity() {
     private lateinit var googleS: ImageButton
     private lateinit var fullName: EditText
