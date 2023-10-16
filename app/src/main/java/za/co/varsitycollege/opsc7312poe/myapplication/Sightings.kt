@@ -49,7 +49,6 @@ class Sightings : AppCompatActivity() {
         val day=c.get(Calendar.DAY_OF_MONTH)
         geocoder= Geocoder(this, Locale.getDefault())
  fusedLocationProviderClient= LocationServices.getFusedLocationProviderClient(this)
-        getLocation()
 
 //on click listener to open a dialog to let users to decdie using camera or storage to select image
         binding.addPhotoButton.setOnClickListener{
@@ -87,6 +86,10 @@ uploadbird()
       startActivity(intent)
       finish()
 }
+        //on click listener to get current location address
+        binding.getLocationButton.setOnClickListener{
+            getLocation()
+        }
 
     }
 //function to get location
@@ -107,9 +110,9 @@ uploadbird()
     currentLocation.addOnSuccessListener {
         val addresses = geocoder.getFromLocation(it.latitude, it.longitude, 1)
         val addressString = addresses?.firstOrNull()?.let { address ->
-            "${address.featureName}, ${address.thoroughfare}, ${address.locality}, ${address.countryName}"
+            "${address.locality}, ${address.countryName}"
         } ?: "Location not found"
-        binding.locationTextView.text = addressString
+        binding.locationEditText.setText(addressString)
     }
 }
 
@@ -165,8 +168,8 @@ private fun selectImage() {
             val uid = user.uid
             val birdname = binding.birdNameEditText.text.toString().trim()
             val selectDate = binding.txtSelectedDate.text.toString().trim()
-            val location = binding.locationTextView.text.toString().trim()
-            if (birdname.isNotEmpty() && selectDate.isNotEmpty() && imageUri != null) {
+            val location = binding.locationEditText.text.toString().trim()
+            if (birdname.isNotEmpty() && selectDate.isNotEmpty() && imageUri != null && location.isNotEmpty()) {
                 // Upload image to Firebase Storage
                  storageReference = FirebaseStorage.getInstance().reference
                     .child("users/$uid")

@@ -108,24 +108,39 @@
         android:textColor="@color/white"
         tools:ignore="HardcodedText" />
 
-    <TextView
-        android:id="@+id/locationTextView"
+    <EditText
+        android:id="@+id/locationEditText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
         android:layout_marginTop="509dp"
+        android:layout_marginStart="24dp"
+        android:layout_toRightOf="@id/getLocationButton"
+        android:layout_weight="1"
         android:fontFamily="@font/habibi"
-        android:text=" {Current Location...}"
+        android:hint="Please enter Birds location"
         android:textColor="@color/get_started__color"
         android:textSize="16dp"
         tools:ignore="HardcodedText,SpUsage,TextSizeCheck" />
+
+    <Button
+        android:id="@+id/getLocationButton"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:layout_marginTop="509dp"
+        android:layout_marginStart="24dp"
+        android:background="@drawable/rectangle_5_shape"
+        android:fontFamily="@font/habibi"
+        android:text="Get Location"
+        android:textColor="@color/get_started__color"
+        android:textStyle="bold"
+        tools:ignore="HardcodedText" />
 
     <Button
         android:id="@+id/saveButton"
         android:layout_width="153dp"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="545dp"
+        android:layout_marginTop="565dp"
         android:background="@drawable/rectangle_5_shape"
         android:fontFamily="@font/habibi"
         android:text="Save"
