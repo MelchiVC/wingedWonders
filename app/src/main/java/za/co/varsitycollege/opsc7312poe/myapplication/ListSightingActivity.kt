@@ -1,7 +1,10 @@
 package za.co.varsitycollege.opsc7312poe.myapplication
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.Button
+import android.widget.ImageButton
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
@@ -14,17 +17,26 @@ class ListSightingActivity : AppCompatActivity() {
     private lateinit var birdRecyclerView: RecyclerView
     private lateinit var storageReference: StorageReference
     private lateinit var birdArrayList: ArrayList<BirdData>
-
+    private lateinit var addbird:ImageButton
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.list_sightings)
         birdRecyclerView =findViewById(R.id.recycleView)
+        addbird=findViewById(R.id.add_birdBtn)
         birdRecyclerView.layoutManager = LinearLayoutManager(this)
         birdRecyclerView.setHasFixedSize(true)
         birdArrayList = arrayListOf<BirdData>()
         getBirdData()
+
+
+        addbird.setOnClickListener{
+            val intent = Intent(this@ListSightingActivity, Sightings::class.java)
+            startActivity(intent)
+            finish()
+        }
     }
+
 
     private fun getBirdData() {
         val user = FirebaseAuth.getInstance().currentUser

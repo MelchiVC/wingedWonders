@@ -48,7 +48,7 @@ class Sightings : AppCompatActivity() {
         val month=c.get(Calendar.MONTH)
         val day=c.get(Calendar.DAY_OF_MONTH)
         geocoder= Geocoder(this, Locale.getDefault())
- fusedLocationProviderClient= LocationServices.getFusedLocationProviderClient(this)
+  fusedLocationProviderClient= LocationServices.getFusedLocationProviderClient(this)
 
 //on click listener to open a dialog to let users to decdie using camera or storage to select image
         binding.addPhotoButton.setOnClickListener{
