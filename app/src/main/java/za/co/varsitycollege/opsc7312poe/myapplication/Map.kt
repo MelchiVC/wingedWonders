@@ -1,36 +1,53 @@
 package za.co.varsitycollege.opsc7312poe.myapplication
 
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
+import androidx.annotation.DrawableRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.content.res.AppCompatResources
 import com.mapbox.android.gestures.MoveGestureDetector
+import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.MapView
 import com.mapbox.maps.Style
 import com.mapbox.maps.extension.style.expressions.dsl.generated.interpolate
 import com.mapbox.maps.plugin.LocationPuck2D
+import com.mapbox.maps.plugin.annotation.annotations
+import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions
+import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
 import com.mapbox.maps.plugin.gestures.OnMoveListener
 import com.mapbox.maps.plugin.gestures.gestures
 import com.mapbox.maps.plugin.locationcomponent.OnIndicatorBearingChangedListener
 import com.mapbox.maps.plugin.locationcomponent.OnIndicatorPositionChangedListener
 import com.mapbox.maps.plugin.locationcomponent.location
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import za.co.varsitycollege.opsc7312poe.myapplication.RetrofitService.createEBirdApiService
 import java.lang.ref.WeakReference
 
-/**
- * Tracks the user location on screen, simulates a navigation session.
- */
+
 class Map : AppCompatActivity() {
-
     private lateinit var locationPermissionHelper: LocationPermissionHelper
-
+    private var userLatitude: Double= 0.0
+    private var userLongitude: Double= 0.0
+    private val apiKey = "keodjjotqkd0"
     private val onIndicatorBearingChangedListener = OnIndicatorBearingChangedListener {
         mapView.getMapboxMap().setCamera(CameraOptions.Builder().bearing(it).build())
     }
 
-    private val onIndicatorPositionChangedListener = OnIndicatorPositionChangedListener {
-        mapView.getMapboxMap().setCamera(CameraOptions.Builder().center(it).build())
-        mapView.gestures.focalPoint = mapView.getMapboxMap().pixelForCoordinate(it)
+    private val onIndicatorPositionChangedListener = OnIndicatorPositionChangedListener { location ->
+        userLatitude = location.latitude()
+        userLongitude = location.longitude()
+        mapView.getMapboxMap().setCamera(CameraOptions.Builder().center(location).build())
+        mapView.gestures.focalPoint = mapView.getMapboxMap().pixelForCoordinate(location)
+        // You can also use the updated values here or display them in a toast if needed.
+
     }
 
     private val onMoveListener = object : OnMoveListener {
@@ -50,13 +67,21 @@ class Map : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map)
         mapView = findViewById(R.id.mapView)
+        val userLocation = LocationManager.userLocation
+        if (userLocation != null) {
+            userLatitude = userLocation.latitude
+            userLongitude = userLocation.longitude
+
+        } else {
+            Toast.makeText(this, "Failed to get location", Toast.LENGTH_SHORT).show()
+        }
         locationPermissionHelper = LocationPermissionHelper(WeakReference(this))
         locationPermissionHelper.checkPermissions {
-            onMapReady()
+            onMapReady(userLatitude,userLongitude)
         }
     }
 
-    private fun onMapReady() {
+    private fun onMapReady(latitude: Double,longitude: Double) {
         mapView.getMapboxMap().setCamera(
             CameraOptions.Builder()
                 .zoom(14.0)
@@ -68,6 +93,17 @@ class Map : AppCompatActivity() {
             initLocationComponent()
             setupGesturesListener()
         }
+
+
+        val apiKey = "keodjjotqkd0"
+        val distanceInKm = 20.0
+        val maxResults = 50
+
+
+        CoroutineScope(Dispatchers.Main).launch {
+            fetchHotspotsFromEBird(latitude, longitude, distanceInKm, maxResults, apiKey)
+        }
+
     }
 
     private fun setupGesturesListener() {
@@ -84,8 +120,7 @@ class Map : AppCompatActivity() {
                     R.drawable.mapbox_mylocation_icon_default,
                 ),
                 shadowImage = AppCompatResources.getDrawable(
-                    this@Map
-                    ,
+                    this@Map,
                     R.drawable.mapbox_mylocation_icon_default,
                 ),
                 scaleExpression = interpolate {
@@ -99,12 +134,13 @@ class Map : AppCompatActivity() {
                         literal(20.0)
                         literal(1.0)
                     }
-                }.toJson()
-            )
+                }.toJson())
         }
         locationComponentPlugin.addOnIndicatorPositionChangedListener(onIndicatorPositionChangedListener)
         locationComponentPlugin.addOnIndicatorBearingChangedListener(onIndicatorBearingChangedListener)
     }
+
+
 
     private fun onCameraTrackingDismissed() {
         Toast.makeText(this, "onCameraTrackingDismissed", Toast.LENGTH_SHORT).show()
@@ -132,5 +168,113 @@ class Map : AppCompatActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         locationPermissionHelper.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
+
+    private fun fetchHotspotsFromEBird(
+        latitude: Double,
+        longitude: Double,
+        distanceInKm: Double,
+        maxResults: Int,
+        apiKey: String
+    ) {
+        val eBirdApiService = createEBirdApiService(apiKey)
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val response = eBirdApiService.getHotspots(latitude, longitude, maxResults, distanceInKm, "csv", apiKey)
+
+                if (response.isSuccessful) {
+                    val csvData = response.body()?.string()
+                    if (!csvData.isNullOrBlank()) {
+                        // Parse the CSV data to get the latitude and longitude values
+                        Log.d("CSV Data", csvData)
+                        val hotspots = parseCsvToHotspots(csvData)
+                        addMarkersToMap(hotspots)
+                    } else {
+                        Log.e("CSV Error", "Empty or null CSV data")
+                    }
+                } else {
+                    Log.e("API Error", "API request was not successful")
+                }
+            } catch (e: Exception) {
+                Log.e("API Error", e.toString())
+                e.printStackTrace()
+            }
+        }
+    }
+    private fun parseCsvToHotspots(csvData: String): List<hotspots> {
+        val hotspots = mutableListOf<hotspots>()
+
+        val lines = csvData.split("\n")
+        for (line in lines) {
+            val parts = line.split(",")
+            if (parts.size >= 5) {
+                val locLat = parts[4].toDouble()
+                val locLng = parts[5].toDouble()
+                val name = parts[6]
+                if (locLat != null && locLng != null) {
+                    // Create a Hotspot object and add it to the list
+                    val hotspot = hotspots(locLat, locLng, name)
+                    hotspots.add(hotspot)
+                }
+            }
+        }
+
+        return hotspots
+    }
+
+
+
+    private fun addMarkersToMap(hotspots: List<hotspots>) {
+        // Ensure this code is executed on the main thread
+        runOnUiThread {
+            hotspots.forEach { hotspot ->
+                val annotationApi = mapView.annotations
+                val pointAnnotationManager = annotationApi.createPointAnnotationManager(mapView)
+
+                val latitude = hotspot.latitude
+                val longitude = hotspot.longitude
+                val yourMarkerImageI = bitmapFromDrawableRes(this@Map, R.drawable.red_marker)
+                // Create a PointAnnotationOptions for each hotspot
+                val pointAnnotationOptions = yourMarkerImageI?.let {
+                    PointAnnotationOptions()
+                        .withPoint(Point.fromLngLat(longitude, latitude))
+                        .withIconImage(it)
+                }
+
+                // Add the resulting pointAnnotation to the map
+                if (pointAnnotationOptions != null) {
+                    pointAnnotationManager.create(pointAnnotationOptions)
+                }
+            }
+        }
+    }
+
+
+
+
+
+
+    private fun bitmapFromDrawableRes(context: Context, @DrawableRes resourceId: Int): Bitmap? {
+        if (context == null) {
+            return null
+        }
+
+        val drawable = AppCompatResources.getDrawable(context, resourceId)
+        if (drawable is BitmapDrawable) {
+            return drawable.bitmap
+        } else {
+            val constantState = drawable?.constantState ?: return null
+            val newDrawable = constantState.newDrawable().mutate()
+            val bitmap = Bitmap.createBitmap(
+                newDrawable.intrinsicWidth,
+                newDrawable.intrinsicHeight,
+                Bitmap.Config.ARGB_8888
+            )
+            val canvas = Canvas(bitmap)
+            newDrawable.setBounds(0, 0, canvas.width, canvas.height)
+            newDrawable.draw(canvas)
+            return bitmap
+        }
+    }
+
 }
 

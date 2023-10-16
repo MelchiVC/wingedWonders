@@ -6,22 +6,31 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.animation.AnimationUtils
 import android.widget.Button
+import android.widget.Toast
+import java.lang.ref.WeakReference
+object LocationManager {
+    var userLocation: UserLocation? = null
+}
 class GetStarted : AppCompatActivity() {
-//For commit
     private lateinit var getStartedButton: Button
-
+    private lateinit var locationProvider: LocationProvider
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_get_started)
 
-        //animation function to make the get started button bounce
+        locationProvider = LocationProvider(WeakReference(this))
+
         getStartedButton = findViewById(R.id.getStarted)
-        //val bounceAnimation = AnimationUtils.loadAnimation(this, R.anim.bounce_animation)
         getStartedButton.setOnClickListener {
-            // Start the animation when the button is clicked
-            val bounceAnimation = AnimationUtils.loadAnimation(this, R.anim.bounce_animation)
-            getStartedButton.startAnimation(bounceAnimation)
+            locationProvider.getLastKnownLocation(
+                onLocationReady = { latitude, longitude ->
+                    LocationManager.userLocation = UserLocation(latitude, longitude)
+                },
+                onError = {
+                    Toast.makeText(this, "Failed to get location", Toast.LENGTH_SHORT).show()
+                }
+            )
             val intent = Intent(this, Login::class.java)
             startActivity(intent)
         }
