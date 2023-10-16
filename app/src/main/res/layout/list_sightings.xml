@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/recyclerView"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    tools:context=".ListSightingActivity">
 
     <View
         android:id="@+id/rectangle_1"
@@ -16,7 +17,7 @@
     <View
         android:id="@+id/rectangle_2"
         android:layout_width="match_parent"
-        android:layout_height="59dp"
+        android:layout_height="match_parent"
         android:layout_marginTop="70dp"
         android:background="@drawable/get_started_bg" />
 
@@ -33,19 +34,21 @@
         android:textSize="18dp"
         tools:ignore="HardcodedText,SpUsage,TextSizeCheck" />
 
-    <TextView
-        android:id="@+id/bird_location"
-        android:layout_width="303dp"
-        android:layout_height="38dp"
-        android:layout_marginStart="-20dp"
+   <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycleView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="4dp"
+        android:clipToPadding="false"
         android:layout_marginTop="85dp"
         android:fontFamily="@font/habibi"
         android:gravity="center_horizontal|top"
-        android:text="Birds found in: {location}"
         android:textColor="@color/get_started__color"
         android:textSize="17dp"
         android:textStyle="bold"
-        tools:ignore="HardcodedText,SpUsage,TextSizeCheck,VisualLintBounds" />
+        tools:ignore="HardcodedText,SpUsage,TextSizeCheck,VisualLintBounds"
+       tools:listitem="@layout/recycler_view_row"
+       />
 
 
     <ImageButton

@@ -64,7 +64,7 @@
         tools:ignore="RtlHardcoded,TextSizeCheck" />
 
     <TextView
-        android:id="@+id/_5"
+        android:id="@+id/A5"
         android:layout_width="19dp"
         android:layout_height="25dp"
         android:layout_gravity="center_horizontal|center"
@@ -72,7 +72,7 @@
         android:layout_marginTop="194dp"
         android:fontFamily="@font/hamhlet"
         android:gravity="center"
-        android:text="@string/_5_string"
+        android:text="@string/A5"
         android:textColor="@color/sightings_color"
         android:textSize="12sp"
         android:textStyle="bold"
@@ -94,7 +94,7 @@
         tools:ignore="RtlHardcoded,TextSizeCheck" />
 
     <TextView
-        android:id="@+id/_11"
+        android:id="@+id/A11"
         android:layout_width="24dp"
         android:layout_height="25dp"
         android:layout_gravity="center_horizontal|center"
@@ -102,7 +102,7 @@
         android:layout_marginTop="194dp"
         android:fontFamily="@font/hamhlet"
         android:gravity="center"
-        android:text="@string/_11_string"
+        android:text="@string/A11"
         android:textColor="@color/sightings_color"
         android:textSize="12sp"
         android:textStyle="bold"

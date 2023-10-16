@@ -1,15 +1,19 @@
 package za.co.varsitycollege.opsc7312poe.myapplication
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.util.Log
+import android.widget.SeekBar
+import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.content.res.AppCompatResources
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.mapbox.android.gestures.MoveGestureDetector
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
@@ -30,10 +34,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import za.co.varsitycollege.opsc7312poe.myapplication.RetrofitService.createEBirdApiService
 import java.lang.ref.WeakReference
+import kotlin.collections.Map
 
 
 class Map : AppCompatActivity() {
     private lateinit var locationPermissionHelper: LocationPermissionHelper
+    private lateinit var bottomNavigationView: BottomNavigationView
     private var userLatitude: Double= 0.0
     private var userLongitude: Double= 0.0
     private val apiKey = "keodjjotqkd0"
@@ -41,6 +47,78 @@ class Map : AppCompatActivity() {
         mapView.getMapboxMap().setCamera(CameraOptions.Builder().bearing(it).build())
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_map)
+        //region SeekBar
+        val distanceSeekBar = findViewById<SeekBar>(R.id.distanceSeekBar)
+        val distanceTextView = findViewById<TextView>(R.id.distanceTextView)
+        val maxDistance = 100
+        distanceSeekBar.max = maxDistance
+        distanceTextView.text = "Maximum Distance: 0 km"
+        distanceSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                // Update the TextView with the current selected distance
+                distanceTextView.text = "Maximum Distance: $progress km"
+            }
+            override fun onStartTrackingTouch(p0: SeekBar?) {
+                TODO("Not yet implemented")
+            }
+            override fun onStopTrackingTouch(p0: SeekBar?) {
+                TODO("Not yet implemented")
+            }
+        })
+//endregion
+
+        //region MapView Initialization
+        //initializing the mapView
+        mapView = findViewById(R.id.mapView)
+        val userLocation = LocationManager.userLocation
+        if (userLocation != null) {
+            userLatitude = userLocation.latitude
+            userLongitude = userLocation.longitude
+
+        } else {
+            Toast.makeText(this, "Failed to get location", Toast.LENGTH_SHORT).show()
+        }
+        locationPermissionHelper = LocationPermissionHelper(WeakReference(this))
+        locationPermissionHelper.checkPermissions {
+            onMapReady(userLatitude,userLongitude)
+        }
+        //endregion
+
+        //region Navbar
+        bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavigationView)
+        bottomNavigationView.setOnNavigationItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.menu_home -> {
+                    // Start the HomeActivity
+                    startActivity(Intent(this, Home::class.java))
+                    return@setOnNavigationItemSelectedListener true
+                }
+                R.id.menu_map -> {
+                    // Start the MapActivity
+                    startActivity(Intent(this, Map::class.java))
+                    return@setOnNavigationItemSelectedListener true
+                }
+                R.id.menu_sightings -> {
+                    // Start the SightingsActivity
+                    startActivity(Intent(this, Sightings::class.java))
+                    return@setOnNavigationItemSelectedListener true
+                }
+                R.id.menu_settings -> {
+                    // Start the SettingsActivity
+                    startActivity(Intent(this, Settings::class.java))
+                    return@setOnNavigationItemSelectedListener true
+                }
+            }
+            false
+        }
+        //endregion
+    }
+
+    //region Map logic
+    //region Map initialization
     private val onIndicatorPositionChangedListener = OnIndicatorPositionChangedListener { location ->
         userLatitude = location.latitude()
         userLongitude = location.longitude()
@@ -62,25 +140,6 @@ class Map : AppCompatActivity() {
         override fun onMoveEnd(detector: MoveGestureDetector) {}
     }
     private lateinit var mapView: MapView
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_map)
-        mapView = findViewById(R.id.mapView)
-        val userLocation = LocationManager.userLocation
-        if (userLocation != null) {
-            userLatitude = userLocation.latitude
-            userLongitude = userLocation.longitude
-
-        } else {
-            Toast.makeText(this, "Failed to get location", Toast.LENGTH_SHORT).show()
-        }
-        locationPermissionHelper = LocationPermissionHelper(WeakReference(this))
-        locationPermissionHelper.checkPermissions {
-            onMapReady(userLatitude,userLongitude)
-        }
-    }
-
     private fun onMapReady(latitude: Double,longitude: Double) {
         mapView.getMapboxMap().setCamera(
             CameraOptions.Builder()
@@ -140,8 +199,6 @@ class Map : AppCompatActivity() {
         locationComponentPlugin.addOnIndicatorBearingChangedListener(onIndicatorBearingChangedListener)
     }
 
-
-
     private fun onCameraTrackingDismissed() {
         Toast.makeText(this, "onCameraTrackingDismissed", Toast.LENGTH_SHORT).show()
         mapView.location
@@ -159,6 +216,7 @@ class Map : AppCompatActivity() {
             .removeOnIndicatorPositionChangedListener(onIndicatorPositionChangedListener)
         mapView.gestures.removeOnMoveListener(onMoveListener)
     }
+    //endregion
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
@@ -168,7 +226,8 @@ class Map : AppCompatActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         locationPermissionHelper.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
-
+    //endregion
+    //region API Logic and implementation
     private fun fetchHotspotsFromEBird(
         latitude: Double,
         longitude: Double,
@@ -221,8 +280,6 @@ class Map : AppCompatActivity() {
         return hotspots
     }
 
-
-
     private fun addMarkersToMap(hotspots: List<hotspots>) {
         // Ensure this code is executed on the main thread
         runOnUiThread {
@@ -247,12 +304,6 @@ class Map : AppCompatActivity() {
             }
         }
     }
-
-
-
-
-
-
     private fun bitmapFromDrawableRes(context: Context, @DrawableRes resourceId: Int): Bitmap? {
         if (context == null) {
             return null
@@ -275,6 +326,7 @@ class Map : AppCompatActivity() {
             return bitmap
         }
     }
+    //endregion
 
 }
 
