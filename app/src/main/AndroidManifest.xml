@@ -21,6 +21,9 @@
             android:name=".Sightings"
             android:exported="false" />
         <activity
+            android:name=".ListSightingActivity"
+            android:exported="false" />
+        <activity
             android:name=".Home"
             android:exported="false" />
         <activity

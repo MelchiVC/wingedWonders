@@ -4,14 +4,17 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.location.Location
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
@@ -20,10 +23,13 @@ import com.google.firebase.storage.StorageReference
 import za.co.varsitycollege.opsc7312poe.myapplication.databinding.ActivitySightingsBinding
 import java.io.ByteArrayOutputStream
 import java.util.*
+import kotlin.collections.Map
 
 class Sightings : AppCompatActivity() {
     private lateinit var binding: ActivitySightingsBinding
     private lateinit var mAuth: FirebaseAuth
+    private lateinit var bottomNavigationView: BottomNavigationView
+    private lateinit var locationTextview: TextView
     private lateinit var mDatabase: DatabaseReference
     private lateinit var birdData: BirdData
     private lateinit var storageReference: StorageReference
@@ -39,8 +45,9 @@ class Sightings : AppCompatActivity() {
         val year=c.get(Calendar.YEAR)
         val month=c.get(Calendar.MONTH)
         val day=c.get(Calendar.DAY_OF_MONTH)
+        locationTextview = findViewById(R.id.locationTextView)
+        locationTextview.text = UserLocationProvider.getLocationName()
 
-//on click listener to open a dialog to let users to decdie using camera or storage to select image
         binding.addPhotoButton.setOnClickListener{
             val builder = AlertDialog.Builder(this)
             builder.setTitle("Upload image methods")
@@ -76,6 +83,34 @@ class Sightings : AppCompatActivity() {
             startActivity(intent)
             finish()
         }
+        //region Navbar
+        bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavigationView)
+        bottomNavigationView.setOnNavigationItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.menu_home -> {
+                    // Start the HomeActivity
+                    startActivity(Intent(this, Home::class.java))
+                    return@setOnNavigationItemSelectedListener true
+                }
+                R.id.menu_map -> {
+                    // Start the MapActivity
+                    startActivity(Intent(this, Map::class.java))
+                    return@setOnNavigationItemSelectedListener true
+                }
+                R.id.menu_sightings -> {
+                    // Start the SightingsActivity
+                    startActivity(Intent(this, Sightings::class.java))
+                    return@setOnNavigationItemSelectedListener true
+                }
+                R.id.menu_settings -> {
+                    // Start the SettingsActivity
+                    startActivity(Intent(this, Settings::class.java))
+                    return@setOnNavigationItemSelectedListener true
+                }
+            }
+            false
+        }
+        //endregion
 
     }
 
@@ -131,7 +166,9 @@ class Sightings : AppCompatActivity() {
             val uid = user.uid
             val birdname = binding.birdNameEditText.text.toString().trim()
             val selectDate = binding.txtSelectedDate.text.toString().trim()
-            if (birdname.isNotEmpty() && selectDate.isNotEmpty() && imageUri != null) {
+            val location= UserLocationProvider.getLocationName()
+            //val Location = userLocation.locationName
+            if (birdname.isNotEmpty() && selectDate.isNotEmpty() && imageUri != null && location != null) {
                 // Upload image to Firebase Storage
                 storageReference = FirebaseStorage.getInstance().reference
                     .child("users/$uid")
@@ -143,7 +180,7 @@ class Sightings : AppCompatActivity() {
                             val imageUrl = uri.toString()
 
                             // Create a BirdData object with the image URL
-                            val birdData = BirdData(uid, birdname, selectDate, imageUrl)
+                            val birdData = BirdData(uid, birdname, selectDate, imageUrl,location)
 
                             // Save bird data to Firebase Realtime Database
                             mDatabase = FirebaseDatabase.getInstance().reference

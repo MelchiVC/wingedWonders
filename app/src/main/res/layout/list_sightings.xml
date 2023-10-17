@@ -14,6 +14,7 @@
         android:layout_marginTop="-50dp"
         android:background="@drawable/home_bg"
         tools:ignore="VisualLintBounds" />
+
     <View
         android:id="@+id/rectangle_2"
         android:layout_width="match_parent"
@@ -34,22 +35,21 @@
         android:textSize="18dp"
         tools:ignore="HardcodedText,SpUsage,TextSizeCheck" />
 
-   <androidx.recyclerview.widget.RecyclerView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycleView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="4dp"
+        android:layout_marginTop="5dp"
         android:clipToPadding="false"
-        android:layout_marginTop="85dp"
         android:fontFamily="@font/habibi"
         android:gravity="center_horizontal|top"
         android:textColor="@color/get_started__color"
         android:textSize="17dp"
         android:textStyle="bold"
         tools:ignore="HardcodedText,SpUsage,TextSizeCheck,VisualLintBounds"
-       tools:listitem="@layout/recycler_view_row"
-       />
+        tools:listitem="@layout/recycler_view_row" >
 
+    </androidx.recyclerview.widget.RecyclerView>
 
     <ImageButton
         android:id="@+id/back"
@@ -61,17 +61,23 @@
         android:src="@drawable/back"
         tools:ignore="ContentDescription,SpeakableTextPresentCheck" />
 
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="16dp">
 
-    <ImageButton
-        android:id="@+id/add_birdBtn"
-        android:layout_width="58dp"
-        android:layout_height="58dp"
-        android:layout_marginStart="320dp"
-        android:layout_marginTop="640dp"
-        android:background="@drawable/add_bird_bg"
-        android:src="@drawable/add_bird"
-        tools:ignore="ContentDescription,SpeakableTextPresentCheck" />
+        <ImageButton
+            android:id="@+id/add_birdBtn"
+            android:layout_width="58dp"
+            android:layout_height="58dp"
+            android:layout_marginEnd="0dp"
+            android:layout_marginBottom="0dp"
+            android:background="@drawable/add_bird_bg"
+            android:src="@drawable/add_bird"
+            tools:ignore="ContentDescription,SpeakableTextPresentCheck"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
-
-
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </RelativeLayout>

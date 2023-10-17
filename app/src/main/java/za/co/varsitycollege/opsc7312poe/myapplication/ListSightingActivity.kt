@@ -1,7 +1,10 @@
 package za.co.varsitycollege.opsc7312poe.myapplication
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.Button
+import android.widget.ImageButton
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
@@ -24,6 +27,19 @@ class ListSightingActivity : AppCompatActivity() {
         birdRecyclerView.setHasFixedSize(true)
         birdArrayList = arrayListOf<BirdData>()
         getBirdData()
+        val back = findViewById<ImageButton>(R.id.back)
+        back.setOnClickListener {
+            val intent = Intent(this@ListSightingActivity, Sightings::class.java)
+            startActivity(intent)
+            finish()
+        }
+
+        val addBird = findViewById<ImageButton>(R.id.add_birdBtn)
+        addBird.setOnClickListener {
+            val intent = Intent(this@ListSightingActivity, Sightings::class.java)
+            startActivity(intent)
+            finish()
+        }
     }
 
     private fun getBirdData() {
@@ -33,16 +49,15 @@ class ListSightingActivity : AppCompatActivity() {
             mDatabase= FirebaseDatabase.getInstance().getReference("users/$uid/bird")
             mDatabase.addValueEventListener(object: ValueEventListener{
                 override fun onDataChange(snapshot: DataSnapshot) {
-if(snapshot.exists()){
-    for(birdSnapShort in snapshot.children){
-        val bird=birdSnapShort.getValue(BirdData::class.java)
-        birdArrayList.add(bird!!)
-    }
-    val adapter = BirdDataAdapter(birdArrayList)
-    birdRecyclerView.adapter = adapter
-    adapter.notifyDataSetChanged()
-
-}                }
+            if(snapshot.exists()){
+                for(birdSnapShort in snapshot.children){
+                    val bird=birdSnapShort.getValue(BirdData::class.java)
+                    birdArrayList.add(bird!!)
+                }
+                 val adapter = BirdDataAdapter(birdArrayList)
+            birdRecyclerView.adapter = adapter
+            adapter.notifyDataSetChanged()
+            }                }
 
                 override fun onCancelled(error: DatabaseError) {
                     TODO("Not yet implemented")

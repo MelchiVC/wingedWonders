@@ -5,6 +5,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
+import android.location.LocationManager
 import android.os.Bundle
 import android.util.Log
 import android.widget.SeekBar
@@ -40,6 +41,8 @@ import kotlin.collections.Map
 class Map : AppCompatActivity() {
     private lateinit var locationPermissionHelper: LocationPermissionHelper
     private lateinit var bottomNavigationView: BottomNavigationView
+    private lateinit var locName: TextView
+    private var userLocation: UserLocation? = null
     private var userLatitude: Double= 0.0
     private var userLongitude: Double= 0.0
     private val apiKey = "keodjjotqkd0"
@@ -50,33 +53,42 @@ class Map : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map)
+        locName= findViewById(R.id.locationTextView)
+        locName.text= "Current location: "+ UserLocationProvider.getLocationName()
         //region SeekBar
         val distanceSeekBar = findViewById<SeekBar>(R.id.distanceSeekBar)
         val distanceTextView = findViewById<TextView>(R.id.distanceTextView)
+        val locationTextView = findViewById<TextView>(R.id.locationTextView)
         val maxDistance = 100
         distanceSeekBar.max = maxDistance
         distanceTextView.text = "Maximum Distance: 0 km"
+
         distanceSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 // Update the TextView with the current selected distance
                 distanceTextView.text = "Maximum Distance: $progress km"
             }
-            override fun onStartTrackingTouch(p0: SeekBar?) {
-                TODO("Not yet implemented")
+
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {
+                // Display the selected value when the user starts dragging
+                val progress = distanceSeekBar.progress
+                distanceTextView.text = "Maximum Distance: $progress km"
             }
-            override fun onStopTrackingTouch(p0: SeekBar?) {
-                TODO("Not yet implemented")
+
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                // Display the selected value when the user stops dragging
+                val progress = distanceSeekBar.progress
+                distanceTextView.text = "Maximum Distance: $progress km"
             }
         })
-//endregion
+      //endregion
 
         //region MapView Initialization
         //initializing the mapView
         mapView = findViewById(R.id.mapView)
-        val userLocation = LocationManager.userLocation
-        if (userLocation != null) {
-            userLatitude = userLocation.latitude
-            userLongitude = userLocation.longitude
+        if (UserLocationProvider.getUserLatitude() != null) {
+            userLatitude = UserLocationProvider.getUserLatitude()
+            userLongitude = UserLocationProvider.getUserLongitude()
 
         } else {
             Toast.makeText(this, "Failed to get location", Toast.LENGTH_SHORT).show()
