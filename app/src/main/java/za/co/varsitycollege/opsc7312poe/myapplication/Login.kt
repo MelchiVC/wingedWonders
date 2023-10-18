@@ -5,16 +5,18 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.ImageButton
 import androidx.appcompat.app.AppCompatActivity
+import android.view.View
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
+import androidx.lifecycle.ViewModelProvider
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 
-//For commit
+
 class Login : AppCompatActivity() {
     private lateinit var googleS: ImageButton
     private lateinit var auth: FirebaseAuth
@@ -55,6 +57,9 @@ class Login : AppCompatActivity() {
                     val user = auth.currentUser
                     if (user != null) {
                         fetchUserData(user.uid)
+                        val intent = Intent(this,Home::class.java)
+                        startActivity(intent)
+                        finish()
                     }
                 } else {
                     Toast.makeText(this, "Unsuccessful Login try again Or Sign in below", Toast.LENGTH_SHORT).show()
@@ -90,7 +95,8 @@ class Login : AppCompatActivity() {
                         UserDataManager.getInstance().setLoggedInUser(loggedInUser)
 
                         // Proceed to the Home activity
-                        val intent = Intent(this@Login, Home::class.java)
+                        // val intent = Intent(this@Login, Home::class.java)
+                        val intent = Intent(this@Login, Maps::class.java)
                         startActivity(intent)
                         finish()
                     } else {
@@ -112,8 +118,9 @@ class Login : AppCompatActivity() {
         if (requestCode == GoogleSignin.RC_SIGN_IN) {
             googleSignInHelper.handleSignInResult(data)
         }
-    } 
+    }
 
 }
+
 
 
