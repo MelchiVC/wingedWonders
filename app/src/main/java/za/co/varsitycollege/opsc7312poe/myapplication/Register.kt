@@ -61,7 +61,9 @@ class Register : AppCompatActivity() {
                             userRef.child("email").setValue(userEmail)
 
                             Toast.makeText(this@Register, "Successfully created", Toast.LENGTH_SHORT).show()
-
+                            val intent = Intent(this@Register, Login::class.java)
+                            startActivity(intent)
+                            finish()
                         } else {
                             Toast.makeText(this@Register, "Unsuccessful", Toast.LENGTH_SHORT).show()
                         }

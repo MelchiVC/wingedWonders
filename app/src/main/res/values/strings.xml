@@ -46,8 +46,8 @@
     <string name="sightings_string">Sightings</string>
     <string name="birds_seen_string">Birds Seen</string>
     <string name="edit_profile_string">Edit Profile</string>
-    <string name="_5_string">A5</string>
-    <string name="_11_string">A11</string>
+    <string name="A5">A5</string>
+    <string name="A11">A11</string>
     <string name="settings_ek3_string">Settings</string>
     <string name="sarah_thompson_string">Sarah Thompson</string>
     <string name="e_mail_string">E-mail</string>
@@ -57,4 +57,6 @@
     <string name="notifications_ek1_string">Notifications</string>
     <string name="logout_string">Logout</string>
 
+    //Mapbox
+    <string name="mapbox_access_token">pk.eyJ1IjoidHJpc3RhbnN0IiwiYSI6ImNsbGx4Z2c2bDBsZ2MzbW5mOHpya3Y1bnEifQ.A7MCwXTujPZ3XZ-5_Hpovg</string>
 </resources>

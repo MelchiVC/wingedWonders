@@ -4,6 +4,7 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.location.Location
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -24,6 +25,8 @@ import java.util.*
 class Sightings : AppCompatActivity() {
     private lateinit var binding: ActivitySightingsBinding
     private lateinit var mAuth: FirebaseAuth
+    private lateinit var bottomNavigationView: BottomNavigationView
+    private lateinit var locationTextview: TextView
     private lateinit var mDatabase: DatabaseReference
     private lateinit var birdData: BirdData
     private lateinit var storageReference: StorageReference
@@ -39,47 +42,82 @@ class Sightings : AppCompatActivity() {
         val year=c.get(Calendar.YEAR)
         val month=c.get(Calendar.MONTH)
         val day=c.get(Calendar.DAY_OF_MONTH)
+        locationTextview = findViewById(R.id.locationTextView)
+        locationTextview.text = UserLocationProvider.getLocationName()
 
-//on click listener to open a dialog to let users to decdie using camera or storage to select image
         binding.addPhotoButton.setOnClickListener{
-val builder = AlertDialog.Builder(this)
-           builder.setTitle("Upload image methods")
-           builder.setMessage("Choose a method to upload image")
-           builder.setPositiveButton("Gallery") { dialog: DialogInterface, which: Int ->
-               dialog.dismiss()
-               selectImage()
-           }
-           builder.setNegativeButton("Camera") { dialog: DialogInterface, which: Int ->
-               dialog.dismiss()
-               carmeraImage()
-           }
-val dialog:AlertDialog=builder.create()
-        dialog.show()
-}
+            val builder = AlertDialog.Builder(this)
+            builder.setTitle("Upload image methods")
+            builder.setMessage("Choose a method to upload image")
+            builder.setPositiveButton("Gallery") { dialog: DialogInterface, which: Int ->
+                dialog.dismiss()
+                selectImage()
+            }
+            builder.setNegativeButton("Camera") { dialog: DialogInterface, which: Int ->
+                dialog.dismiss()
+                carmeraImage()
+            }
+            val dialog:AlertDialog=builder.create()
+            dialog.show()
+        }
         binding.selectDateButton.setOnClickListener{
 
-val datePickerDialog=DatePickerDialog(this,DatePickerDialog.OnDateSetListener { datePicker, Y, M, D ->
-    binding.txtSelectedDate.setText(""+D+"/"+M+"/"+Y
-    )
-},year,month,day)
+            val datePickerDialog=DatePickerDialog(this,DatePickerDialog.OnDateSetListener { datePicker, Y, M, D ->
+                binding.txtSelectedDate.setText(""+D+"/"+M+"/"+Y
+                )
+            },year,month,day)
             datePickerDialog.datePicker.maxDate= System.currentTimeMillis()
             datePickerDialog.show()
         }
 
 //on click listener to save all the detailed that is entered
         binding.saveButton.setOnClickListener{
-uploadbird()
+            uploadbird()
+            Toast.makeText(this, "Bird uploaded successfully", Toast.LENGTH_SHORT).show()
         }
-
+// on click listener to navigate to bird list page
+        binding.viewSightings.setOnClickListener{
+            val intent = Intent(this@Sightings, ListSightingActivity::class.java)
+            startActivity(intent)
+            finish()
+        }
+        //region Navbar
+        bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavigationView)
+        bottomNavigationView.setOnNavigationItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.menu_home -> {
+                    // Start the HomeActivity
+                    startActivity(Intent(this, Home::class.java))
+                    return@setOnNavigationItemSelectedListener true
+                }
+                R.id.menu_map -> {
+                    // Start the MapActivity
+                    startActivity(Intent(this, Map::class.java))
+                    return@setOnNavigationItemSelectedListener true
+                }
+                R.id.menu_sightings -> {
+                    // Start the SightingsActivity
+                    startActivity(Intent(this, Sightings::class.java))
+                    return@setOnNavigationItemSelectedListener true
+                }
+                R.id.menu_settings -> {
+                    // Start the SettingsActivity
+                    startActivity(Intent(this, Settings::class.java))
+                    return@setOnNavigationItemSelectedListener true
+                }
+            }
+            false
+        }
+        //endregion
 
     }
 
     // Function to select image from local storage
-private fun selectImage() {
-    val selectIntent = Intent()
-    selectIntent.type="image/*"
-    startActivityForResult(selectIntent,request_gallery)
-}
+    private fun selectImage() {
+        val selectIntent = Intent()
+        selectIntent.type="image/*"
+        startActivityForResult(selectIntent,request_gallery)
+    }
     // function to use carmera to take a photo
     private fun carmeraImage(){
         val cameraIntent= Intent(MediaStore.ACTION_IMAGE_CAPTURE)
@@ -93,13 +131,13 @@ private fun selectImage() {
             }
         }
 
-        }
+    }
 
     // Function used after successfully pick image and set image uri
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == RESULT_OK && requestCode == request_gallery && data != null) {
-             imageUri = data?.data!!
+            imageUri = data?.data!!
             binding.birdImageView.setImageURI(imageUri)
         }
         else if (resultCode == RESULT_OK && requestCode == request_carmera && data != null){
@@ -110,7 +148,7 @@ private fun selectImage() {
             binding.birdImageView.setImageBitmap(imageBitmap)
         }
     }
-//function to convert bitmap to url
+    //function to convert bitmap to url
     private fun getImageUriFromBitmap(bitmap: Bitmap): Uri {
         val byteArrayOutputStream = ByteArrayOutputStream()
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream)
@@ -126,9 +164,11 @@ private fun selectImage() {
             val uid = user.uid
             val birdname = binding.birdNameEditText.text.toString().trim()
             val selectDate = binding.txtSelectedDate.text.toString().trim()
-            if (birdname.isNotEmpty() && selectDate.isNotEmpty() && imageUri != null) {
+            val location= UserLocationProvider.getLocationName()
+            //val Location = userLocation.locationName
+            if (birdname.isNotEmpty() && selectDate.isNotEmpty() && imageUri != null && location != null) {
                 // Upload image to Firebase Storage
-                 storageReference = FirebaseStorage.getInstance().reference
+                storageReference = FirebaseStorage.getInstance().reference
                     .child("users/$uid")
                 val imageRef=storageReference.child("bird/${System.currentTimeMillis()}.jpg")
                 imageRef.putFile(imageUri!!).addOnCompleteListener { storageTask ->
@@ -138,7 +178,7 @@ private fun selectImage() {
                             val imageUrl = uri.toString()
 
                             // Create a BirdData object with the image URL
-                            val birdData = BirdData(uid, birdname, selectDate, imageUrl)
+                            val birdData = BirdData(uid, birdname, selectDate, imageUrl,location)
 
                             // Save bird data to Firebase Realtime Database
                             mDatabase = FirebaseDatabase.getInstance().reference

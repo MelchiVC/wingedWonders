@@ -2,6 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@color/main"
     tools:context=".Sightings">
 
@@ -140,10 +141,21 @@
         android:layout_width="match_parent"
         android:layout_height="59dp"
         android:layout_marginTop="622dp"
+        android:layout_marginBottom="10dp"
         android:background="@color/get_started__color"
         android:fontFamily="@font/habibi"
         android:text="View Sightings"
         android:textColor="@color/white"
         tools:ignore="HardcodedText,VisualLintButtonSize" />
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigationView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        app:menu="@menu/bottom_nav_menu"
+        android:padding="10dp"
+        android:background="@drawable/nav_border"
+        tools:ignore="VisualLintBottomNav" />
 
 </RelativeLayout>
