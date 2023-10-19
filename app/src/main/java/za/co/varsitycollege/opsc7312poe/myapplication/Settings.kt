@@ -43,6 +43,9 @@ class Settings : AppCompatActivity() {
         }
         logoutButton.setOnClickListener {
             logout()
+            val intent = Intent(this@Settings, Login::class.java)
+            startActivity(intent)
+            finish()
         }
         updateUIWithLoggedInUser()
         fetchUserDataAndSettings()

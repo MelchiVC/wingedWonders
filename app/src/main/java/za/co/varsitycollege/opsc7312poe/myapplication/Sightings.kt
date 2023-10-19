@@ -76,6 +76,7 @@ class Sightings : AppCompatActivity() {
 //on click listener to save all the detailed that is entered
         binding.saveButton.setOnClickListener{
             uploadbird()
+            Toast.makeText(this, "Bird uploaded successfully", Toast.LENGTH_SHORT).show()
         }
 // on click listener to navigate to bird list page
         binding.viewSightings.setOnClickListener{

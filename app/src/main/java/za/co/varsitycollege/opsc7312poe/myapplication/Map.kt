@@ -1,253 +1,193 @@
 package za.co.varsitycollege.opsc7312poe.myapplication
 
-import android.content.Context
+import android.Manifest
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.drawable.BitmapDrawable
-import android.location.LocationManager
+import android.content.pm.PackageManager
+import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
-import android.widget.SeekBar
-import android.widget.TextView
 import android.widget.Toast
-import androidx.annotation.DrawableRes
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.app.ActivityCompat
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.mapbox.android.gestures.MoveGestureDetector
+import com.mapbox.api.directions.v5.DirectionsCriteria
+import com.mapbox.api.directions.v5.MapboxDirections
+import com.mapbox.api.directions.v5.models.DirectionsResponse
+import com.mapbox.api.directions.v5.models.DirectionsRoute
+import com.mapbox.api.directions.v5.models.RouteOptions
+import com.mapbox.geojson.Feature
+import com.mapbox.geojson.FeatureCollection
+import com.mapbox.geojson.LineString
 import com.mapbox.geojson.Point
-import com.mapbox.maps.CameraOptions
-import com.mapbox.maps.MapView
-import com.mapbox.maps.Style
-import com.mapbox.maps.extension.style.expressions.dsl.generated.interpolate
-import com.mapbox.maps.plugin.LocationPuck2D
-import com.mapbox.maps.plugin.annotation.annotations
-import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions
-import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
-import com.mapbox.maps.plugin.gestures.OnMoveListener
-import com.mapbox.maps.plugin.gestures.gestures
-import com.mapbox.maps.plugin.locationcomponent.OnIndicatorBearingChangedListener
-import com.mapbox.maps.plugin.locationcomponent.OnIndicatorPositionChangedListener
-import com.mapbox.maps.plugin.locationcomponent.location
+import com.mapbox.mapboxsdk.Mapbox
+import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
+import com.mapbox.mapboxsdk.geometry.LatLng
+import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions
+import com.mapbox.mapboxsdk.location.modes.CameraMode
+import com.mapbox.mapboxsdk.location.modes.RenderMode
+import com.mapbox.mapboxsdk.maps.MapView
+import com.mapbox.mapboxsdk.maps.MapboxMap
+import com.mapbox.mapboxsdk.maps.OnMapReadyCallback
+import com.mapbox.mapboxsdk.maps.Style
+import com.mapbox.mapboxsdk.style.layers.LineLayer
+import com.mapbox.mapboxsdk.style.layers.Property
+import com.mapbox.mapboxsdk.style.layers.PropertyFactory
+import com.mapbox.mapboxsdk.style.layers.SymbolLayer
+import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
+import com.mapbox.mapboxsdk.utils.BitmapUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import za.co.varsitycollege.opsc7312poe.myapplication.RetrofitService.createEBirdApiService
-import java.lang.ref.WeakReference
 import kotlin.collections.Map
 
-
 class Map : AppCompatActivity() {
-    private lateinit var locationPermissionHelper: LocationPermissionHelper
+    private lateinit var mapView: MapView
+    private lateinit var currentRoute: DirectionsRoute
+    private lateinit var client: MapboxDirections
+    private lateinit var origin: Point
+    private lateinit var destination: Point
+    var destinationLatitude : Double=0.0
+    var destinationLongitude : Double=0.0
     private lateinit var bottomNavigationView: BottomNavigationView
-    private lateinit var locName: TextView
-    private var userLocation: UserLocation? = null
-    private var userLatitude: Double= 0.0
-    private var userLongitude: Double= 0.0
-    private val apiKey = "keodjjotqkd0"
-    private val onIndicatorBearingChangedListener = OnIndicatorBearingChangedListener {
-        mapView.getMapboxMap().setCamera(CameraOptions.Builder().bearing(it).build())
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Initialize Mapbox with your access token
+        Mapbox.getInstance(this, "sk.eyJ1IjoidHJpc3RhbnN0IiwiYSI6ImNsbGx4eWJweDJoeGEzZXFoNGhlcmR1NG0ifQ.6lkNrr-67q59pOP9kPYTtw")
+        // Set the layout for this activity
         setContentView(R.layout.activity_map)
-        locName= findViewById(R.id.locationTextView)
-        locName.text= "Current location: "+ UserLocationProvider.getLocationName()
-        //region SeekBar
-        val distanceSeekBar = findViewById<SeekBar>(R.id.distanceSeekBar)
-        val distanceTextView = findViewById<TextView>(R.id.distanceTextView)
-        val locationTextView = findViewById<TextView>(R.id.locationTextView)
-        val maxDistance = 100
-        distanceSeekBar.max = maxDistance
-        distanceTextView.text = "Maximum Distance: 0 km"
+        // Initialize the MapView
+        mapView = findViewById(R.id.mapView)
+        mapView.onCreate(savedInstanceState)
+        mapView.getMapAsync(object : OnMapReadyCallback {
+            override fun onMapReady(mapboxMap: MapboxMap) {
+                mapboxMap.setStyle(Style.MAPBOX_STREETS) { style ->
+                    // Set the origin and destination coordinates
+                    mapboxMap.animateCamera(
+                        CameraUpdateFactory.newLatLngZoom(
+                        LatLng(UserLocationProvider.getUserLatitude(), UserLocationProvider.getUserLongitude()),
+                        14.0
+                    ))
+                    origin = Point.fromLngLat(UserLocationProvider.getUserLongitude(), UserLocationProvider.getUserLatitude())
+                    destination = Point.fromLngLat(UserLocationProvider.getUserLongitude(), UserLocationProvider.getUserLatitude())
 
-        distanceSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                // Update the TextView with the current selected distance
-                distanceTextView.text = "Maximum Distance: $progress km"
-            }
+                    // Initialize the sources and layers on the map
+                    initSource(style)
+                    initLayers(style)
 
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {
-                // Display the selected value when the user starts dragging
-                val progress = distanceSeekBar.progress
-                distanceTextView.text = "Maximum Distance: $progress km"
-            }
+                    //region UserMarker
+                    val locationComponent = mapboxMap.locationComponent
+                    locationComponent.activateLocationComponent(
+                        LocationComponentActivationOptions.builder(this@Map, style).build()
+                    )
+                    if (ActivityCompat.checkSelfPermission(
+                            this@Map,
+                            Manifest.permission.ACCESS_FINE_LOCATION
+                        ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                            this@Map,
+                            Manifest.permission.ACCESS_COARSE_LOCATION
+                        ) != PackageManager.PERMISSION_GRANTED
+                    ) {
+                    }
+                    locationComponent.isLocationComponentEnabled = true
+                    locationComponent.cameraMode = CameraMode.TRACKING
+                    locationComponent.renderMode = RenderMode.NORMAL
+                    mapboxMap.animateCamera(
+                        CameraUpdateFactory.newLatLngZoom(
+                            LatLng(UserLocationProvider.getUserLatitude(), UserLocationProvider.getUserLongitude()),
+                            15.0 // Adjust the zoom level as needed
+                        )
+                    )
+                    //endregion
+                    // Get the directions route from Mapbox Directions API
+                    fetchHotspotsFromEBird(mapboxMap)
 
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {
-                // Display the selected value when the user stops dragging
-                val progress = distanceSeekBar.progress
-                distanceTextView.text = "Maximum Distance: $progress km"
+                }
             }
         })
-      //endregion
 
-        //region MapView Initialization
-        //initializing the mapView
-        mapView = findViewById(R.id.mapView)
-        if (UserLocationProvider.getUserLatitude() != null) {
-            userLatitude = UserLocationProvider.getUserLatitude()
-            userLongitude = UserLocationProvider.getUserLongitude()
-
-        } else {
-            Toast.makeText(this, "Failed to get location", Toast.LENGTH_SHORT).show()
-        }
-        locationPermissionHelper = LocationPermissionHelper(WeakReference(this))
-        locationPermissionHelper.checkPermissions {
-            onMapReady(userLatitude,userLongitude)
-        }
-        //endregion
-
-        //region Navbar
+        //region navigation
         bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavigationView)
         bottomNavigationView.setOnNavigationItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.menu_home -> {
                     // Start the HomeActivity
-                    startActivity(Intent(this, Home::class.java))
+                    startActivity(Intent(applicationContext, Home::class.java))
+                    overridePendingTransition(0, 0)
                     return@setOnNavigationItemSelectedListener true
                 }
                 R.id.menu_map -> {
-                    // Start the MapActivity
-                    startActivity(Intent(this, Map::class.java))
+                    // Start the SettingsActivity
+                    startActivity(Intent(applicationContext, Map::class.java))
+                    overridePendingTransition(0, 0)
                     return@setOnNavigationItemSelectedListener true
                 }
+
                 R.id.menu_sightings -> {
                     // Start the SightingsActivity
-                    startActivity(Intent(this, Sightings::class.java))
+                    startActivity(Intent(applicationContext, Sightings::class.java))
+                    overridePendingTransition(0, 0)
                     return@setOnNavigationItemSelectedListener true
                 }
-                R.id.menu_settings -> {
-                    // Start the SettingsActivity
-                    startActivity(Intent(this, Settings::class.java))
-                    return@setOnNavigationItemSelectedListener true
-                }
+                R.id.menu_map -> return@setOnNavigationItemSelectedListener true
             }
             false
         }
         //endregion
     }
 
-    //region Map logic
-    //region Map initialization
-    private val onIndicatorPositionChangedListener = OnIndicatorPositionChangedListener { location ->
-        userLatitude = location.latitude()
-        userLongitude = location.longitude()
-        mapView.getMapboxMap().setCamera(CameraOptions.Builder().center(location).build())
-        mapView.gestures.focalPoint = mapView.getMapboxMap().pixelForCoordinate(location)
-        // You can also use the updated values here or display them in a toast if needed.
+    private fun initSource(loadedMapStyle: Style) {
+        // Add a source for the route
+        loadedMapStyle.addSource(GeoJsonSource("route-source"))
 
+        // Add a source for the origin and destination markers
+        val iconGeoJsonSource = GeoJsonSource("icon-source", FeatureCollection.fromFeatures(arrayOf(
+            Feature.fromGeometry(Point.fromLngLat(origin.longitude(), origin.latitude())),
+            Feature.fromGeometry(Point.fromLngLat(destination.longitude(), destination.latitude()))
+        )))
+        loadedMapStyle.addSource(iconGeoJsonSource)
     }
 
-    private val onMoveListener = object : OnMoveListener {
-        override fun onMoveBegin(detector: MoveGestureDetector) {
-            onCameraTrackingDismissed()
-        }
-
-        override fun onMove(detector: MoveGestureDetector): Boolean {
-            return false
-        }
-
-        override fun onMoveEnd(detector: MoveGestureDetector) {}
-    }
-    private lateinit var mapView: MapView
-    private fun onMapReady(latitude: Double,longitude: Double) {
-        mapView.getMapboxMap().setCamera(
-            CameraOptions.Builder()
-                .zoom(14.0)
-                .build()
+    private fun initLayers(loadedMapStyle: Style) {
+        // Create a LineLayer for the route
+        val routeLayer = LineLayer("route-layer", "route-source")
+        routeLayer.setProperties(
+            PropertyFactory.lineCap(Property.LINE_CAP_ROUND),
+            PropertyFactory.lineJoin(Property.LINE_JOIN_ROUND),
+            PropertyFactory.lineWidth(5f),
+            PropertyFactory.lineColor(Color.parseColor("#009688"))
         )
-        mapView.getMapboxMap().loadStyleUri(
-            Style.MAPBOX_STREETS
-        ) {
-            initLocationComponent()
-            setupGesturesListener()
-        }
+        loadedMapStyle.addLayer(routeLayer)
 
+        // Add a red marker icon to the map
+        BitmapUtils.getBitmapFromDrawable(resources.getDrawable(R.drawable.red_marker))
+            ?.let { loadedMapStyle.addImage("red-pin-icon", it) }
 
-        val apiKey = "keodjjotqkd0"
-        val distanceInKm = 20.0
-        val maxResults = 50
-
-
-        CoroutineScope(Dispatchers.Main).launch {
-            fetchHotspotsFromEBird(latitude, longitude, distanceInKm, maxResults, apiKey)
-        }
-
+        // Add a SymbolLayer for the origin and destination markers
+        loadedMapStyle.addLayer(SymbolLayer("icon-layer", "icon-source")
+            .withProperties(
+                PropertyFactory.iconImage("red-pin-icon"),
+                PropertyFactory.iconIgnorePlacement(true),
+                PropertyFactory.iconAllowOverlap(true),
+                PropertyFactory.iconOffset(arrayOf(0f, -9f))
+            )
+        )
     }
+    private fun fetchHotspotsFromEBird(mapboxMap: MapboxMap) {
+        val latitude = -26.1137887 // Replace with your actual latitude
+        val longitude = 28.1479007 // Replace with your actual longitude
+        val distanceInKm = 20.0 // Replace with your desired distance
+        val maxResults = 20 // Replace with your desired maximum results
+        val apiKey = "keodjjotqkd0" // Replace with your eBird API key
 
-    private fun setupGesturesListener() {
-        mapView.gestures.addOnMoveListener(onMoveListener)
-    }
-
-    private fun initLocationComponent() {
-        val locationComponentPlugin = mapView.location
-        locationComponentPlugin.updateSettings {
-            this.enabled = true
-            this.locationPuck = LocationPuck2D(
-                bearingImage = AppCompatResources.getDrawable(
-                    this@Map,
-                    R.drawable.mapbox_mylocation_icon_default,
-                ),
-                shadowImage = AppCompatResources.getDrawable(
-                    this@Map,
-                    R.drawable.mapbox_mylocation_icon_default,
-                ),
-                scaleExpression = interpolate {
-                    linear()
-                    zoom()
-                    stop {
-                        literal(0.0)
-                        literal(0.6)
-                    }
-                    stop {
-                        literal(20.0)
-                        literal(1.0)
-                    }
-                }.toJson())
-        }
-        locationComponentPlugin.addOnIndicatorPositionChangedListener(onIndicatorPositionChangedListener)
-        locationComponentPlugin.addOnIndicatorBearingChangedListener(onIndicatorBearingChangedListener)
-    }
-
-    private fun onCameraTrackingDismissed() {
-        Toast.makeText(this, "onCameraTrackingDismissed", Toast.LENGTH_SHORT).show()
-        mapView.location
-            .removeOnIndicatorPositionChangedListener(onIndicatorPositionChangedListener)
-        mapView.location
-            .removeOnIndicatorBearingChangedListener(onIndicatorBearingChangedListener)
-        mapView.gestures.removeOnMoveListener(onMoveListener)
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        mapView.location
-            .removeOnIndicatorBearingChangedListener(onIndicatorBearingChangedListener)
-        mapView.location
-            .removeOnIndicatorPositionChangedListener(onIndicatorPositionChangedListener)
-        mapView.gestures.removeOnMoveListener(onMoveListener)
-    }
-    //endregion
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        locationPermissionHelper.onRequestPermissionsResult(requestCode, permissions, grantResults)
-    }
-    //endregion
-    //region API Logic and implementation
-    private fun fetchHotspotsFromEBird(
-        latitude: Double,
-        longitude: Double,
-        distanceInKm: Double,
-        maxResults: Int,
-        apiKey: String
-    ) {
         val eBirdApiService = createEBirdApiService(apiKey)
+        val hotspots = mutableListOf<hotspots>() // Create a list to store hotspots
+
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val response = eBirdApiService.getHotspots(latitude, longitude, maxResults, distanceInKm, "csv", apiKey)
@@ -257,8 +197,22 @@ class Map : AppCompatActivity() {
                     if (!csvData.isNullOrBlank()) {
                         // Parse the CSV data to get the latitude and longitude values
                         Log.d("CSV Data", csvData)
-                        val hotspots = parseCsvToHotspots(csvData)
-                        addMarkersToMap(hotspots)
+
+                        val lines = csvData.split("\n")
+                        for (line in lines) {
+                            val parts = line.split(",")
+                            if (parts.size >= 5) {
+                                val locLat = parts[4].toDoubleOrNull()
+                                val locLng = parts[5].toDoubleOrNull()
+                                val name = parts[6]
+                                if (locLat != null && locLng != null) {
+                                    // Create a Hotspot object and add it to the list
+                                    val hotspot = hotspots(locLat, locLng, name)
+                                    hotspots.add(hotspot)
+                                }
+                            }
+                        }
+                        addHotspotMarkersToMap(mapboxMap, hotspots)
                     } else {
                         Log.e("CSV Error", "Empty or null CSV data")
                     }
@@ -269,76 +223,153 @@ class Map : AppCompatActivity() {
                 Log.e("API Error", e.toString())
                 e.printStackTrace()
             }
-        }
-    }
-    private fun parseCsvToHotspots(csvData: String): List<hotspots> {
-        val hotspots = mutableListOf<hotspots>()
 
-        val lines = csvData.split("\n")
-        for (line in lines) {
-            val parts = line.split(",")
-            if (parts.size >= 5) {
-                val locLat = parts[4].toDouble()
-                val locLng = parts[5].toDouble()
-                val name = parts[6]
-                if (locLat != null && locLng != null) {
-                    // Create a Hotspot object and add it to the list
-                    val hotspot = hotspots(locLat, locLng, name)
-                    hotspots.add(hotspot)
-                }
+            // Now you have the hotspots list
+            // You can use the hotspots list as needed
+            for (hotspot in hotspots) {
+                Log.d("Hotspot", "Name: ${hotspot.name}, Latitude: ${hotspot.latitude}, Longitude: ${hotspot.longitude}")
             }
         }
-
-        return hotspots
     }
-
-    private fun addMarkersToMap(hotspots: List<hotspots>) {
-        // Ensure this code is executed on the main thread
+    private fun addHotspotMarkersToMap(mapboxMap: MapboxMap, hotspots: List<hotspots>) {
         runOnUiThread {
-            hotspots.forEach { hotspot ->
-                val annotationApi = mapView.annotations
-                val pointAnnotationManager = annotationApi.createPointAnnotationManager(mapView)
+            mapboxMap.getStyle { style ->
+                // Loop through the list of hotspots and add markers for each one
+                for (hotspot in hotspots) {
+                    val hotspotFeature =
+                        Feature.fromGeometry(Point.fromLngLat(hotspot.longitude, hotspot.latitude))
+                    hotspotFeature.addStringProperty("name", hotspot.name)
 
-                val latitude = hotspot.latitude
-                val longitude = hotspot.longitude
-                val yourMarkerImageI = bitmapFromDrawableRes(this@Map, R.drawable.red_marker)
-                // Create a PointAnnotationOptions for each hotspot
-                val pointAnnotationOptions = yourMarkerImageI?.let {
-                    PointAnnotationOptions()
-                        .withPoint(Point.fromLngLat(longitude, latitude))
-                        .withIconImage(it)
+                    // Use the hotspot name as the icon image (replace with your icon image)
+                    style.addImage(
+                        hotspot.name,
+                        BitmapFactory.decodeResource(resources, R.drawable.red_marker)
+                    )
+
+                    // Add a source for each hotspot
+                    val hotspotSource = GeoJsonSource(hotspot.name, hotspotFeature)
+                    style.addSource(hotspotSource)
+
+                    // Create a SymbolLayer for each hotspot
+                    style.addLayer(
+                        SymbolLayer(hotspot.name, hotspot.name)
+                            .withProperties(
+                                PropertyFactory.iconImage(hotspot.name),
+                                PropertyFactory.iconIgnorePlacement(true),
+                                PropertyFactory.iconAllowOverlap(true),
+                                PropertyFactory.iconOffset(arrayOf(0f, -9f))
+                            )
+                    )
                 }
 
-                // Add the resulting pointAnnotation to the map
-                if (pointAnnotationOptions != null) {
-                    pointAnnotationManager.create(pointAnnotationOptions)
+                // Set up an OnMapClickListener to handle marker click events
+                mapboxMap.addOnMapClickListener { clickPoint ->
+                    val screenPoint = mapboxMap.projection.toScreenLocation(LatLng(clickPoint.latitude, clickPoint.longitude))
+
+                    // Iterate through the hotspots and check if a marker was clicked
+                    for (hotspot in hotspots) {
+                        val markerScreenPoint = mapboxMap.projection.toScreenLocation(LatLng(hotspot.latitude, hotspot.longitude))
+                        val dx = screenPoint.x - markerScreenPoint.x
+                        val dy = screenPoint.y - markerScreenPoint.y
+
+                        // Define a threshold for click sensitivity
+                        val thresholdInPixels = 30
+
+                        if (Math.abs(dx) < thresholdInPixels && Math.abs(dy) < thresholdInPixels) {
+                            // A marker was clicked
+                            getRoute(mapboxMap, origin, destination)
+                            destinationLatitude=hotspot.latitude
+                            destinationLongitude=hotspot.longitude
+                            val message = "Name: ${hotspot.name}, Latitude: ${hotspot.latitude}, Longitude: ${hotspot.longitude}"
+                            Toast.makeText(this@Map, message, Toast.LENGTH_SHORT).show()
+                            return@addOnMapClickListener true
+                        }
+                    }
+
+                    false
                 }
             }
         }
     }
-    private fun bitmapFromDrawableRes(context: Context, @DrawableRes resourceId: Int): Bitmap? {
-        if (context == null) {
-            return null
-        }
+    private fun getRoute(mapboxMap: MapboxMap, origin: Point, destination: Point) {
+        client = MapboxDirections.builder()
+            .accessToken("pk.eyJ1IjoidHJpc3RhbnN0IiwiYSI6ImNsbGx4Z2c2bDBsZ2MzbW5mOHpya3Y1bnEifQ.A7MCwXTujPZ3XZ-5_Hpovg")
+            .routeOptions(
+                RouteOptions.builder()
+                    .coordinatesList(listOf(
+                        Point.fromLngLat(UserLocationProvider.getUserLongitude(),UserLocationProvider.getUserLatitude(),), // origin
+                        Point.fromLngLat(destinationLongitude,destinationLatitude, ) // destination
+                    ))
+                    .profile(DirectionsCriteria.PROFILE_DRIVING)
+                    .overview(DirectionsCriteria.OVERVIEW_FULL)
+                    .build()
 
-        val drawable = AppCompatResources.getDrawable(context, resourceId)
-        if (drawable is BitmapDrawable) {
-            return drawable.bitmap
-        } else {
-            val constantState = drawable?.constantState ?: return null
-            val newDrawable = constantState.newDrawable().mutate()
-            val bitmap = Bitmap.createBitmap(
-                newDrawable.intrinsicWidth,
-                newDrawable.intrinsicHeight,
-                Bitmap.Config.ARGB_8888
             )
-            val canvas = Canvas(bitmap)
-            newDrawable.setBounds(0, 0, canvas.width, canvas.height)
-            newDrawable.draw(canvas)
-            return bitmap
-        }
-    }
-    //endregion
+            .build()
+        client.enqueueCall(object : Callback<DirectionsResponse> {
+            override fun onResponse(call: Call<DirectionsResponse>, response: Response<DirectionsResponse>) {
+                if (response.body() == null) {
+                    Log.d("Key check","No routes found, make sure you set the right user and access token.")
+                    return
+                } else if (response.body()?.routes()?.isEmpty() == true) {
+                    Log.d("Key check","No routes found")
+                    return
+                }
 
+                currentRoute = response.body()?.routes()?.get(0)!!
+
+                // Show the route distance in a toast
+                Toast.makeText(this@Map, "Route distance: ${currentRoute.distance()}", Toast.LENGTH_SHORT).show()
+
+                // Update the route source on the map
+                mapboxMap.getStyle { style ->
+                    style.getSourceAs<GeoJsonSource>("route-source")
+                        ?.setGeoJson(LineString.fromPolyline(currentRoute.geometry()!!, 6))
+                }
+            }
+
+            override fun onFailure(call: Call<DirectionsResponse>, throwable: Throwable) {
+                Log.e("Directions API Error", "Failed to make API request: ${throwable.message}")
+                Toast.makeText(this@Map, "Error: ${throwable.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
+    }
+    override fun onResume() {
+        super.onResume()
+        mapView.onResume()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        mapView.onStart()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        mapView.onStop()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        mapView.onPause()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        mapView.onSaveInstanceState(outState)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (client != null) {
+            client.cancelCall()
+        }
+        mapView.onDestroy()
+    }
+
+    override fun onLowMemory() {
+        super.onLowMemory()
+        mapView.onLowMemory()
+    }
 }
 
