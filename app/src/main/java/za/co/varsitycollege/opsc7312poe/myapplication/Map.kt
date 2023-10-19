@@ -179,18 +179,16 @@ class Map : AppCompatActivity() {
         )
     }
     private fun fetchHotspotsFromEBird(mapboxMap: MapboxMap) {
-        val latitude = -26.1137887 // Replace with your actual latitude
-        val longitude = 28.1479007 // Replace with your actual longitude
-        val distanceInKm = 20.0 // Replace with your desired distance
-        val maxResults = 20 // Replace with your desired maximum results
-        val apiKey = "keodjjotqkd0" // Replace with your eBird API key
+        val distanceInKm = 20.0
+        val maxResults = 20
+        val apiKey = "keodjjotqkd0"
 
         val eBirdApiService = createEBirdApiService(apiKey)
         val hotspots = mutableListOf<hotspots>() // Create a list to store hotspots
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val response = eBirdApiService.getHotspots(latitude, longitude, maxResults, distanceInKm, "csv", apiKey)
+                val response = eBirdApiService.getHotspots(UserLocationProvider.getUserLatitude(),UserLocationProvider.getUserLongitude(), maxResults, distanceInKm, "csv", apiKey)
 
                 if (response.isSuccessful) {
                     val csvData = response.body()?.string()
