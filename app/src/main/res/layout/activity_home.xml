@@ -44,7 +44,9 @@
         android:text="@string/view_all"
         android:textAppearance="@style/view_all"
         android:textStyle="bold"
-        tools:ignore="RtlHardcoded,TextSizeCheck" />
+        tools:ignore="RtlHardcoded,TextSizeCheck"
+        android:clickable="true"
+        android:onClick="openNextScreen" />
 
 
     <RelativeLayout

@@ -155,6 +155,8 @@
         android:layout_alignParentBottom="true"
         app:menu="@menu/bottom_nav_menu"
         android:padding="10dp"
+        app:itemIconTint="@drawable/bottom_nav"
+        app:itemTextColor="@drawable/bottom_nav"
         android:background="@drawable/nav_border"
         tools:ignore="VisualLintBottomNav" />
 

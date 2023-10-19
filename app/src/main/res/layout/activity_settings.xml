@@ -189,7 +189,8 @@
         android:layout_marginTop="460dp"
         android:minHeight="48dp"
         android:enabled="false"
-        android:textColor="@color/get_started__color" />
+        android:textColor="@color/get_started__color"
+        android:background="@color/get_started__color"/>
 
     <TextView
         android:id="@+id/notifications_ek1"

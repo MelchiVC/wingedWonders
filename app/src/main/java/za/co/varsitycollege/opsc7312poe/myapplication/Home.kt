@@ -3,6 +3,7 @@ package za.co.varsitycollege.opsc7312poe.myapplication
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.View
 import android.widget.TextView
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
@@ -53,6 +54,11 @@ class Home : AppCompatActivity() {
             }
             false
         }
+    }
 
+    fun openNextScreen(view: View) {
+        // Add code to navigate to the next screen here, e.g., starting a new activity.
+        val intent = Intent(this, ListSightingActivity::class.java)
+        startActivity(intent)
     }
 }

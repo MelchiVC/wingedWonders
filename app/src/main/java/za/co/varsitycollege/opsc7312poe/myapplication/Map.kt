@@ -117,24 +117,24 @@ class Map : AppCompatActivity() {
             when (item.itemId) {
                 R.id.menu_home -> {
                     // Start the HomeActivity
-                    startActivity(Intent(applicationContext, Home::class.java))
-                    overridePendingTransition(0, 0)
+                    startActivity(Intent(this, Home::class.java))
                     return@setOnNavigationItemSelectedListener true
                 }
                 R.id.menu_map -> {
-                    // Start the SettingsActivity
-                    startActivity(Intent(applicationContext, Map::class.java))
-                    overridePendingTransition(0, 0)
+                    // Start the MapActivity
+                    startActivity(Intent(this, Map::class.java))
                     return@setOnNavigationItemSelectedListener true
                 }
-
                 R.id.menu_sightings -> {
                     // Start the SightingsActivity
-                    startActivity(Intent(applicationContext, Sightings::class.java))
-                    overridePendingTransition(0, 0)
+                    startActivity(Intent(this, Sightings::class.java))
                     return@setOnNavigationItemSelectedListener true
                 }
-                R.id.menu_map -> return@setOnNavigationItemSelectedListener true
+                R.id.menu_settings -> {
+                    // Start the SettingsActivity
+                    startActivity(Intent(this, Settings::class.java))
+                    return@setOnNavigationItemSelectedListener true
+                }
             }
             false
         }
