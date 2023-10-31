@@ -1,12 +1,15 @@
 package za.co.varsitycollege.opsc7312poe.myapplication
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
+import android.widget.Switch
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -54,7 +57,10 @@ class Map : AppCompatActivity() {
     var destinationLatitude : Double=0.0
     var destinationLongitude : Double=0.0
     private lateinit var bottomNavigationView: BottomNavigationView
+    private lateinit var toggleSwitch: Switch
+    private lateinit var statusLabel: TextView
 
+    @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // Initialize Mapbox with your access token
@@ -110,6 +116,24 @@ class Map : AppCompatActivity() {
                 }
             }
         })
+        // TOGGLE SWITCH FUNCTION
+        toggleSwitch = findViewById(R.id.toggleSwitch)
+        statusLabel = findViewById(R.id.statusLabel)
+
+        toggleSwitch.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                // User Toggled the switch ON
+                statusLabel.text = "Displaying 'My Sightings' hotspots"
+                val intent = Intent(this, Sightings::class.java)
+                startActivity(intent)
+            } else {
+                // User Toggled the switch OFF
+                statusLabel.text = "Displaying eBird hotspots"
+                val intent = Intent(this, Map::class.java)
+                startActivity(intent)
+            }
+        }
+
 
         //region navigation
         bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavigationView)

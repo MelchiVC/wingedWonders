@@ -1,17 +1,11 @@
 package za.co.varsitycollege.opsc7312poe.myapplication
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
-import android.widget.AutoCompleteTextView
-import android.widget.Button
-import android.widget.Spinner
-import android.widget.Switch
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
@@ -26,9 +20,14 @@ class Settings : AppCompatActivity() {
     private lateinit var emailText: TextView
     private lateinit var EditProfile: TextView
     private lateinit var unitSpinner: Spinner
+    @SuppressLint("UseSwitchCompatOrMaterialCode")
     private lateinit var notificationSwitch: Switch
     private lateinit var logoutButton: Button
     private val unitOptions = arrayOf("Miles", "Kilometers")
+    private lateinit var distanceTextView: TextView
+    private lateinit var distanceSeekBar: SeekBar
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
@@ -65,6 +64,25 @@ class Settings : AppCompatActivity() {
                 disableNotifications()
             }
         }
+        //SEEKBAR HOTSPOT FILTER FUNCTION
+
+            distanceTextView = findViewById(R.id.distanceTextView)
+            distanceSeekBar = findViewById(R.id.distanceSeekBar)
+
+            distanceSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                @SuppressLint("SetTextI18n")
+                override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                    val distance = progress.toDouble() / 10 // Convert progress to a decimal value
+                    distanceTextView.text = "Distance: $distance km"
+                }
+
+                override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+
+                override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+            })
+
+
+
 
         //BOTTOM NAVIGATION
         bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavigationView)

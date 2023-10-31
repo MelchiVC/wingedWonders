@@ -187,10 +187,11 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="236dp"
         android:layout_marginTop="460dp"
-        android:minHeight="48dp"
+        android:background="@color/get_started__color"
         android:enabled="false"
+        android:minHeight="48dp"
         android:textColor="@color/get_started__color"
-        android:background="@color/get_started__color"/>
+        tools:ignore="SpeakableTextPresentCheck" />
 
     <TextView
         android:id="@+id/notifications_ek1"
@@ -213,6 +214,41 @@
         android:background="@drawable/home_bg"
         tools:ignore="RtlHardcoded,TouchTargetSizeCheck,UseSwitchCompatOrMaterialXml" />
 
+    <TextView
+        android:id="@+id/dragSliderTextView"
+        android:layout_width="248dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:fontFamily="@font/hamhlet"
+        android:text="Drag slider to filter bird hotspots by distance"
+        android:textColor="@color/white"
+        android:textSize="30px"
+        android:textStyle="bold"
+        tools:ignore="HardcodedText,TextSizeCheck" />
+
+    <SeekBar
+        android:id="@+id/distanceSeekBar"
+        android:layout_width="134dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="35dp"
+        android:layout_marginBottom="10dp"
+        android:background="@drawable/get_started_bg" />
+    <TextView
+        android:id="@+id/distanceTextView"
+        android:layout_width="109dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="15dp"
+        android:layout_marginTop="80dp"
+        android:layout_marginBottom="10dp"
+        android:fontFamily="@font/hamhlet"
+        android:text="Distance: 0 km"
+        android:textColor="@color/white"
+        android:textSize="30px"
+        android:textStyle="bold"
+        tools:ignore="HardcodedText,TextSizeCheck" />
 
     <Button
         android:id="@+id/logoutBtn"
