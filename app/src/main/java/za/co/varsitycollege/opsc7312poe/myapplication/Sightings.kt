@@ -207,4 +207,5 @@ class Sightings : AppCompatActivity() {
             // User not authenticated
             Toast.makeText(this, "User not authenticated", Toast.LENGTH_SHORT).show()
         }
-    }}
+    }
+}
