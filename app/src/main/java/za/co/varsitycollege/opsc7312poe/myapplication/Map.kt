@@ -1,12 +1,16 @@
 package za.co.varsitycollege.opsc7312poe.myapplication
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
+import android.widget.Button
+import android.widget.Switch
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -54,7 +58,15 @@ class Map : AppCompatActivity() {
     var destinationLatitude : Double=0.0
     var destinationLongitude : Double=0.0
     private lateinit var bottomNavigationView: BottomNavigationView
+    private lateinit var myMapbtn: Button
+    private lateinit var statusLabel: TextView
+    private var isSightingsDisplayed = false
+    private val hotspots = mutableListOf<Hotspot>()
+    private lateinit var mapboxMap: MapboxMap
+    private var fixedSightingLatitude: Double = 40.758896
+    private var fixedSightingLongitude: Double = 73.985130
 
+    @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // Initialize Mapbox with your access token
@@ -110,6 +122,15 @@ class Map : AppCompatActivity() {
                 }
             }
         })
+
+        // TOGGLE SWITCH FUNCTION
+        myMapbtn = findViewById(R.id.myMap)
+
+       myMapbtn.setOnClickListener{
+           val registrationIntent = Intent(this, MyMap::class.java)
+           startActivity(registrationIntent)
+       }
+
 
         //region navigation
         bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavigationView)
@@ -179,7 +200,7 @@ class Map : AppCompatActivity() {
         )
     }
     private fun fetchHotspotsFromEBird(mapboxMap: MapboxMap) {
-        val distanceInKm = 20.0
+        val distanceInKm = 20.0  
         val maxResults = 20
         val apiKey = "keodjjotqkd0"
 
@@ -279,7 +300,7 @@ class Map : AppCompatActivity() {
                             destinationLatitude=hotspot.latitude
                             destinationLongitude=hotspot.longitude
                             val message = "Name: ${hotspot.name}, Latitude: ${hotspot.latitude}, Longitude: ${hotspot.longitude}"
-                            Toast.makeText(this@Map, message, Toast.LENGTH_SHORT).show()
+
                             return@addOnMapClickListener true
                         }
                     }
@@ -331,6 +352,20 @@ class Map : AppCompatActivity() {
                 Toast.makeText(this@Map, "Error: ${throwable.message}", Toast.LENGTH_SHORT).show()
             }
         })
+    }
+
+    private fun removeMarkersFromMap(mapboxMap: MapboxMap) {
+        mapboxMap.getStyle { style ->
+            // Iterate through the list of hotspots and remove the sources and layers
+            for (hotspot in hotspots) {
+                // Remove the source
+                style.removeSource(hotspot.name)
+                // Remove the layer
+                style.removeLayer(hotspot.name)
+                // Remove the icon image
+                style.removeImage(hotspot.name)
+            }
+        }
     }
     override fun onResume() {
         super.onResume()

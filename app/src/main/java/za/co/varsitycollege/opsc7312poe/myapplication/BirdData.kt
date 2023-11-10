@@ -8,7 +8,8 @@ import java.util.Date
         val bname: String? = null,
         val selectDate: String? =null,
         val birdImage: String?=null,
-        val location: String?=null
+        val latitude: Double? = null,
+        val longitude: Double? = null
 
 ){
         // Add a default constructor with no arguments

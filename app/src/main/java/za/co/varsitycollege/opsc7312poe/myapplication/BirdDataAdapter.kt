@@ -30,7 +30,7 @@ return birdList.size
      val currentBird = birdList[position]
         holder.birdNameView.text= currentBird.bname
         holder.DateView.text= currentBird.selectDate
-        holder.locationView.text= currentBird.location
+        holder.locationView.text= "Latitude: "+ currentBird.latitude +"Longitude: " + currentBird.longitude
         Glide.with(holder.imageView.context)
             .load(currentBird.birdImage) // Assuming birdImage is a URL string
             .into(holder.imageView)
