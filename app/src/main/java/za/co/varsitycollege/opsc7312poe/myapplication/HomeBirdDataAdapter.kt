@@ -27,7 +27,7 @@ class HomeBirdDataAdapter(private val birdList: ArrayList<BirdData>) : RecyclerV
     override fun onBindViewHolder(holder: HomeBirdDataAdapter.homeBirdViewHolder, position: Int) {
         val currentBird = birdList[position]
         holder.birdNameView.text= currentBird.bname
-        holder.locationView.text= currentBird.location
+        holder.locationView.text= currentBird.latitude.toString()
         Glide.with(holder.imageView.context)
             .load(currentBird.birdImage) // Assuming birdImage is a URL string
             .into(holder.imageView)

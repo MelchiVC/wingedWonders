@@ -8,6 +8,7 @@ import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
+import android.widget.Button
 import android.widget.Switch
 import android.widget.TextView
 import android.widget.Toast
@@ -57,8 +58,13 @@ class Map : AppCompatActivity() {
     var destinationLatitude : Double=0.0
     var destinationLongitude : Double=0.0
     private lateinit var bottomNavigationView: BottomNavigationView
-    private lateinit var toggleSwitch: Switch
+    private lateinit var myMapbtn: Button
     private lateinit var statusLabel: TextView
+    private var isSightingsDisplayed = false
+    private val hotspots = mutableListOf<Hotspot>()
+    private lateinit var mapboxMap: MapboxMap
+    private var fixedSightingLatitude: Double = 40.758896
+    private var fixedSightingLongitude: Double = 73.985130
 
     @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -116,23 +122,12 @@ class Map : AppCompatActivity() {
                 }
             }
         })
-        // TOGGLE SWITCH FUNCTION
-        toggleSwitch = findViewById(R.id.toggleSwitch)
-        statusLabel = findViewById(R.id.statusLabel)
+        myMapbtn = findViewById(R.id.myMap)
 
-        toggleSwitch.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) {
-                // User Toggled the switch ON
-                statusLabel.text = "Displaying 'My Sightings' hotspots"
-                val intent = Intent(this, Sightings::class.java)
-                startActivity(intent)
-            } else {
-                // User Toggled the switch OFF
-                statusLabel.text = "Displaying eBird hotspots"
-                val intent = Intent(this, Map::class.java)
-                startActivity(intent)
-            }
-        }
+       myMapbtn.setOnClickListener{
+           val registrationIntent = Intent(this, MyMap::class.java)
+           startActivity(registrationIntent)
+       }
 
 
         //region navigation
@@ -141,24 +136,24 @@ class Map : AppCompatActivity() {
             when (item.itemId) {
                 R.id.menu_home -> {
                     // Start the HomeActivity
-                    startActivity(Intent(this, Home::class.java))
+                    startActivity(Intent(applicationContext, Home::class.java))
+                    overridePendingTransition(0, 0)
                     return@setOnNavigationItemSelectedListener true
                 }
                 R.id.menu_map -> {
-                    // Start the MapActivity
-                    startActivity(Intent(this, Map::class.java))
+                    // Start the SettingsActivity
+                    startActivity(Intent(applicationContext, Map::class.java))
+                    overridePendingTransition(0, 0)
                     return@setOnNavigationItemSelectedListener true
                 }
+
                 R.id.menu_sightings -> {
                     // Start the SightingsActivity
-                    startActivity(Intent(this, Sightings::class.java))
+                    startActivity(Intent(applicationContext, Sightings::class.java))
+                    overridePendingTransition(0, 0)
                     return@setOnNavigationItemSelectedListener true
                 }
-                R.id.menu_settings -> {
-                    // Start the SettingsActivity
-                    startActivity(Intent(this, Settings::class.java))
-                    return@setOnNavigationItemSelectedListener true
-                }
+                R.id.menu_map -> return@setOnNavigationItemSelectedListener true
             }
             false
         }
@@ -203,18 +198,16 @@ class Map : AppCompatActivity() {
         )
     }
     private fun fetchHotspotsFromEBird(mapboxMap: MapboxMap) {
-        val latitude = -26.1137887 // Replace with your actual latitude
-        val longitude = 28.1479007 // Replace with your actual longitude
-        val distanceInKm = 20.0 // Replace with your desired distance
-        val maxResults = 20 // Replace with your desired maximum results
-        val apiKey = "keodjjotqkd0" // Replace with your eBird API key
+        val distanceInKm = 20.0
+        val maxResults = 20
+        val apiKey = "keodjjotqkd0"
 
         val eBirdApiService = createEBirdApiService(apiKey)
         val hotspots = mutableListOf<hotspots>() // Create a list to store hotspots
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val response = eBirdApiService.getHotspots(latitude, longitude, maxResults, distanceInKm, "csv", apiKey)
+                val response = eBirdApiService.getHotspots(UserLocationProvider.getUserLatitude(),UserLocationProvider.getUserLongitude(), maxResults, distanceInKm, "csv", apiKey)
 
                 if (response.isSuccessful) {
                     val csvData = response.body()?.string()
@@ -305,7 +298,7 @@ class Map : AppCompatActivity() {
                             destinationLatitude=hotspot.latitude
                             destinationLongitude=hotspot.longitude
                             val message = "Name: ${hotspot.name}, Latitude: ${hotspot.latitude}, Longitude: ${hotspot.longitude}"
-                            Toast.makeText(this@Map, message, Toast.LENGTH_SHORT).show()
+
                             return@addOnMapClickListener true
                         }
                     }

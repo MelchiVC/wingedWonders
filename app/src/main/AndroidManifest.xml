@@ -41,6 +41,9 @@
         <activity
             android:name=".Login"
             android:exported="false" />
+        <activity
+            android:name=".MyMap"
+            android:exported="false" />
 
         <activity
             android:name=".GetStarted"

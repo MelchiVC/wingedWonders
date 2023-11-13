@@ -138,7 +138,6 @@ class Login : AppCompatActivity() {
                         UserDataManager.getInstance().setLoggedInUser(loggedInUser)
 
                         // Proceed to the Home activity
-                       // val intent = Intent(this@Login, Home::class.java)
                         val intent = Intent(this@Login, Home::class.java)
                         startActivity(intent)
                         finish()

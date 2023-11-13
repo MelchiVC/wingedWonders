@@ -14,6 +14,8 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
@@ -23,6 +25,7 @@ import com.google.firebase.storage.StorageReference
 import za.co.varsitycollege.opsc7312poe.myapplication.databinding.ActivitySightingsBinding
 import java.io.ByteArrayOutputStream
 import java.util.*
+import kotlin.collections.Map
 
 class Sightings : AppCompatActivity() {
     private lateinit var binding: ActivitySightingsBinding
@@ -35,11 +38,15 @@ class Sightings : AppCompatActivity() {
     private var imageUri: Uri? = null
     private  var request_gallery=100
     private  var request_carmera=200
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private var userLocation: Location? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding= ActivitySightingsBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        fetchUserLocation()
         val c= Calendar.getInstance()
         val year=c.get(Calendar.YEAR)
         val month=c.get(Calendar.MONTH)
@@ -157,6 +164,29 @@ class Sightings : AppCompatActivity() {
         val path = MediaStore.Images.Media.insertImage(contentResolver, bitmap, "Title", null)
         return Uri.parse(path)
     }
+    private fun fetchUserLocation() {
+        try {
+            fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
+                if (location != null) {
+                    userLocation = location
+                    // Set the user's location in the locationTextview
+                    val locationName = "Latitude: ${userLocation?.latitude}, Longitude: ${userLocation?.longitude}"
+                    locationTextview.text = locationName
+                } else {
+                    // Handle location retrieval failure or location not available
+                    locationTextview.text = "Location not available"
+                }
+            }.addOnFailureListener { e ->
+                // Handle any location retrieval failure, e.g., if location services are disabled
+                locationTextview.text = "Error: ${e.message}"
+            }
+        } catch (e: SecurityException) {
+            // Handle permission-related exceptions
+            e.printStackTrace()
+            locationTextview.text = "Permission denied"
+        }
+    }
+
 
     //function to upload bird object to firebase
     private fun uploadbird() {
@@ -167,25 +197,27 @@ class Sightings : AppCompatActivity() {
             val birdname = binding.birdNameEditText.text.toString().trim()
             val selectDate = binding.txtSelectedDate.text.toString().trim()
             val location= UserLocationProvider.getLocationName()
+            val lat=userLocation?.latitude
+            val long=   userLocation?.longitude
             //val Location = userLocation.locationName
-            if (birdname.isNotEmpty() && selectDate.isNotEmpty() && imageUri != null && location != null) {
+            if (birdname.isNotEmpty() && selectDate.isNotEmpty() && imageUri != null && location != null && userLocation != null) {
                 // Upload image to Firebase Storage
                 storageReference = FirebaseStorage.getInstance().reference
                     .child("users/$uid")
-                val imageRef=storageReference.child("bird/${System.currentTimeMillis()}.jpg")
+                val imageRef = storageReference.child("bird/${System.currentTimeMillis()}.jpg")
                 imageRef.putFile(imageUri!!).addOnCompleteListener { storageTask ->
                     if (storageTask.isSuccessful) {
                         // Get download URL for the uploaded image
                         imageRef.downloadUrl.addOnSuccessListener { uri ->
                             val imageUrl = uri.toString()
 
-                            // Create a BirdData object with the image URL
-                            val birdData = BirdData(uid, birdname, selectDate, imageUrl,location)
+                            // Create a BirdData object with the image URL and user's location
+                            val birdData = BirdData(uid, birdname, selectDate, imageUrl,lat,long)
 
                             // Save bird data to Firebase Realtime Database
                             mDatabase = FirebaseDatabase.getInstance().reference
                                 .child("users/$uid")
-                            val birdRef=mDatabase.child("bird/$birdname")
+                            val birdRef = mDatabase.child("bird/$birdname")
                             birdRef.setValue(birdData)
                                 .addOnSuccessListener {
                                     Toast.makeText(this, "Bird uploaded successfully", Toast.LENGTH_SHORT).show()
@@ -207,5 +239,4 @@ class Sightings : AppCompatActivity() {
             // User not authenticated
             Toast.makeText(this, "User not authenticated", Toast.LENGTH_SHORT).show()
         }
-    }
-}
+    }}
