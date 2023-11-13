@@ -1,5 +1,11 @@
 package za.co.varsitycollege.opsc7312poe.myapplication
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.animation.ObjectAnimator
+import android.view.ViewGroup
+import android.view.animation.AccelerateInterpolator
+import android.widget.ImageView
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
@@ -57,6 +63,10 @@ class Login : AppCompatActivity() {
                     val user = auth.currentUser
                     if (user != null) {
                         fetchUserData(user.uid)
+                        birdLoginAnimation()
+                        val intent = Intent(this,Home::class.java)
+                        startActivity(intent)
+                        finish()
                     }
                 } else {
                     Toast.makeText(this, "Unsuccessful Login try again Or Sign in below", Toast.LENGTH_SHORT).show()
@@ -69,6 +79,42 @@ class Login : AppCompatActivity() {
         if (user == null) {
             Toast.makeText(this, "Invalid account, register below", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    //BIRD POPUP ANIMATION
+    private fun birdLoginAnimation() {
+        // New ImageView gets created
+        val birdImageView = ImageView(this)
+        birdImageView.setImageResource(R.drawable.login_popup)
+
+        // Popup to appear on the main relativeLayout
+        val loginLayout = findViewById<ViewGroup>(R.id.loginLayout)
+        loginLayout.addView(birdImageView)
+
+        // SETS POSITION OF THE BIRD POPUP IMAGEVIEW
+        birdImageView.x = 0f
+        birdImageView.y = 0f
+
+        // Animate the bird ImageView across the screen
+        val animation = ObjectAnimator.ofFloat(birdImageView, "translationX", 0f, 500f)
+        animation.duration = 2000
+        animation.interpolator = AccelerateInterpolator()
+        animation.start()
+
+
+        // eventListener for animation end and remove the bird ImageView from the layout
+        animation.addListener(object : AnimatorListenerAdapter() {
+            override fun onAnimationStart(animation: Animator) {}
+
+            override fun onAnimationEnd(animation: Animator) {
+                loginLayout.removeView(birdImageView)
+            }
+
+            override fun onAnimationCancel(animation: Animator) {}
+
+            override fun onAnimationRepeat(animation: Animator) {}
+
+        })
     }
 
     private fun fetchUserData(uid: String) {

@@ -354,19 +354,6 @@ class Map : AppCompatActivity() {
         })
     }
 
-    private fun removeMarkersFromMap(mapboxMap: MapboxMap) {
-        mapboxMap.getStyle { style ->
-            // Iterate through the list of hotspots and remove the sources and layers
-            for (hotspot in hotspots) {
-                // Remove the source
-                style.removeSource(hotspot.name)
-                // Remove the layer
-                style.removeLayer(hotspot.name)
-                // Remove the icon image
-                style.removeImage(hotspot.name)
-            }
-        }
-    }
     override fun onResume() {
         super.onResume()
         mapView.onResume()

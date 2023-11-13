@@ -8,6 +8,7 @@ import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -56,6 +57,7 @@ class MyMap : AppCompatActivity() {
     private lateinit var mapView: MapView
     private lateinit var client: MapboxDirections
     private lateinit var origin: Point
+    private lateinit var back: ImageButton
     private lateinit var destination: Point
     private lateinit var mDatabase: DatabaseReference
     private lateinit var birdSightings: MutableList<BirdData>
@@ -128,6 +130,13 @@ class MyMap : AppCompatActivity() {
                 )
             }
         }
+
+        back = findViewById(R.id.back)
+        back.setOnClickListener{
+            val registrationIntent = Intent(this, Map::class.java)
+            startActivity(registrationIntent)
+        }
+
     }
 
     private fun fetchBirdDataFromDatabase(mapboxMap: MapboxMap, style: Style) {
