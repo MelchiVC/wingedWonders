@@ -1,5 +1,6 @@
 package za.co.varsitycollege.opsc7312poe.myapplication
 import android.app.DatePickerDialog
+import android.content.ContentValues
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -8,6 +9,7 @@ import android.location.Location
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Environment
 import android.provider.MediaStore
 import android.widget.TextView
 import android.widget.Toast
@@ -24,6 +26,9 @@ import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import za.co.varsitycollege.opsc7312poe.myapplication.databinding.ActivitySightingsBinding
 import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
 import java.util.*
 import kotlin.collections.Map
 
@@ -161,9 +166,34 @@ class Sightings : AppCompatActivity() {
     private fun getImageUriFromBitmap(bitmap: Bitmap): Uri {
         val byteArrayOutputStream = ByteArrayOutputStream()
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream)
-        val path = MediaStore.Images.Media.insertImage(contentResolver, bitmap, "Title", null)
-        return Uri.parse(path)
+
+        // Use current timestamp to generate a unique filename
+        val timestamp = System.currentTimeMillis()
+        val filename = "IMG_$timestamp.jpg"
+
+        // Save the image to the Pictures directory using MediaStore API
+        val contentValues = ContentValues().apply {
+            put(MediaStore.Images.Media.DISPLAY_NAME, filename)
+            put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+        }
+
+        val resolver = contentResolver
+        val imageUri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
+
+        try {
+            imageUri?.let {
+                resolver.openOutputStream(it)?.use { outputStream ->
+                    outputStream.write(byteArrayOutputStream.toByteArray())
+                }
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+
+        return imageUri ?: Uri.EMPTY
     }
+
+
     private fun fetchUserLocation() {
         try {
             fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
