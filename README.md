@@ -1,5 +1,5 @@
 # wingedWonders
-opsc7312-part-2-MelchiVC created by GitHub Classroom
+
 WINGED WONDERS: BIRD-WATCHING APPLICATION 
 -------------------------------------------------------
 Winged Wonders is bird-watching application developed with Android Studio Kotlin, running on a Firebase database. 
